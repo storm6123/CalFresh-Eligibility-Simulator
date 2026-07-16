@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>CalSAWS Trainer — Eligibility Determination and Benefit Calculation (SNAP)</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Welcome / title screen -->
+  <div id="welcome-screen" class="overlay">
+    <div class="overlay-card">
+      <div class="wc-kicker">CalSAWS Training Simulator</div>
+      <h1 class="wc-title">SNAP Policy Trainer</h1>
+      <p class="wc-sub">Step into the eligibility worker's chair. Run real <strong>Eligibility Determination and Benefit Calculation (EDBC)</strong> cases, calculate benefits, and master current SNAP / CalFresh policy — FFY 2026, including the H.R.1 changes.</p>
+
+      <div id="tour-nudge" class="tour-nudge" hidden>
+        <span>👋 <strong>New here?</strong> Take a quick tour of the interface.</span>
+        <span class="tour-nudge-actions">
+          <button class="wc-btn primary sm" id="nudge-start">Start tour</button>
+          <button class="tour-nudge-x" id="nudge-dismiss" aria-label="Dismiss">✕</button>
+        </span>
+      </div>
+
+      <label class="wc-name">Worker name / initials
+        <input type="text" id="welcome-name" maxlength="24" placeholder="e.g. C. Storm" />
+      </label>
+
+      <div class="mode-picker">
+        <button class="mode-card" id="wc-learning">
+          <span class="mode-title">📘 Learning Mode</span>
+          <span class="mode-desc">New to SNAP? Coaching on every step, all modules open, retry freely. No scoring, no leaderboard — just learn the policy and the workflow.</span>
+        </button>
+        <button class="mode-card graded" id="wc-start">
+          <span class="mode-title">🎯 Graded Shift</span>
+          <span class="mode-desc">Know the basics? Race the clock, keep your error rate down, and post your shift to the leaderboard. Modules unlock as you go.</span>
+        </button>
+      </div>
+
+      <div class="wc-menu wc-menu-secondary">
+        <button class="wc-btn" id="wc-tour">👋 Take a Tour</button>
+        <button class="wc-btn" id="wc-tutorial">📖 How to Play</button>
+        <button class="wc-btn" id="wc-leaderboard">📊 Leaderboard</button>
+      </div>
+
+      <p class="wc-foot">Training environment only — mimics the CalSAWS Eligibility Determination and Benefit Calculation (EDBC) workflow to teach policy. Not the live system; holds no real case data. Policy current as of 2026-07-16.</p>
+    </div>
+  </div>
+
+  <!-- Tutorial screen -->
+  <div id="tutorial-screen" class="overlay" hidden>
+    <div class="overlay-card wide">
+      <div class="wc-kicker">How to Play</div>
+      <h1 class="wc-title">Running a Case</h1>
+
+      <ol class="tut-steps">
+        <li><strong>Read the Assistance Unit.</strong> Each case opens with a household summary — members, ages, income, and non-financial flags (elderly, disabled, veteran, immigration status, etc.). These drive the determination.</li>
+        <li><strong>Work the determination steps.</strong> Answer each prompt the way a caseworker would: compute <em>net monthly income</em> (deductions applied in the correct federal order), decide <em>eligibility</em>, and calculate the <em>benefit amount</em> — or, in later modules, judge ABAWD time-limit and noncitizen status.</li>
+        <li><strong>Get graded instantly.</strong> Every answer returns a pass/validation result with a plain-language explanation and the exact <strong>policy citation</strong> (ACL, CFR, FNS COLA) it comes from.</li>
+      </ol>
+
+      <p class="tut-modes">Two ways to play: <strong>📘 Learning Mode</strong> — a coach walks you through the method on every step, all modules are open, and you can retry; nothing is scored. <strong>🎯 Graded Shift</strong> — timed and scored, with the leaderboard and the Alaska Exemption in play.</p>
+
+      <div class="tut-cols">
+        <div class="tut-col">
+          <h3>Modules unlock as you go</h3>
+          <p>Six modules run from basics to a capstone: SNAP Basics → Deductions → Elderly &amp; Disabled → ABAWD Work Requirements → Noncitizen Eligibility → Capstone. Clear 3 cases in a module to unlock the next.</p>
+        </div>
+        <div class="tut-col">
+          <h3>Scoring — accuracy is king</h3>
+          <p>Two quality measures: <strong>Accuracy</strong> = share of steps right. <strong>Payment Error Rate</strong> = share of benefit <em>dollars</em> mis-issued (QC-style, small errors excluded) — a big miscalculation hurts far more than a tiny one. Above a 6% PER, an H.R.1-style cost-share penalty cuts your score. Speed and volume factor in too. Submit a shift to post it to the <strong>Leaderboard</strong>.</p>
+        </div>
+      </div>
+
+      <div class="wc-menu">
+        <button class="wc-btn primary" id="tut-start">▶ Start Shift</button>
+        <button class="wc-btn" id="tut-back">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alaska Exemption polar bear battle -->
+  <div id="bear-screen" class="overlay bear-overlay" hidden>
+    <div class="overlay-card wide" id="bear-card"></div>
+  </div>
+
+  <!-- Learning Mode per-module policy primer -->
+  <div id="primer-screen" class="overlay" hidden>
+    <div class="overlay-card wide" id="primer-card"></div>
+  </div>
+
+  <!-- Beta feedback -->
+  <div id="feedback-screen" class="overlay" hidden>
+    <div class="overlay-card" id="feedback-card"></div>
+  </div>
+
+  <div class="calsaws-app">
+
+    <!-- Case context bar -->
+    <div class="case-bar">
+      <div class="case-ids">
+        <div><span class="lbl">Case Name:</span> <span id="case-name">—</span></div>
+        <div><span class="lbl">Case Number:</span> <span id="case-number">—</span></div>
+      </div>
+      <div class="util-links">
+        <span class="util" id="menu-link"><span class="ic">☰</span>Menu</span>
+        <span class="util"><span class="ic">📓</span>Journal</span>
+        <span class="util"><span class="ic">✅</span>Tasks</span>
+        <span class="util" id="help-link"><span class="ic">❓</span>Help</span>
+        <span class="util"><span class="ic">📁</span>Resources</span>
+        <span class="util util-feedback" id="feedback-link"><span class="ic">💬</span>Feedback</span>
+        <span class="util"><span class="ic">🚪</span>Log Out</span>
+      </div>
+    </div>
+
+    <!-- Global navigation tabs -->
+    <nav class="global-tabs">
+      <span class="gtab">Case Info</span>
+      <span class="gtab active">Eligibility</span>
+      <span class="gtab">Empl. Services</span>
+      <span class="gtab">Child Care</span>
+      <span class="gtab">Resource Databank</span>
+      <span class="gtab">Fiscal</span>
+      <span class="gtab">Special Units</span>
+      <span class="gtab">Reports</span>
+      <span class="gtab">Client Corresp.</span>
+      <span class="gtab">Admin Tools</span>
+    </nav>
+    <div class="gold-rule"></div>
+
+    <div id="help-banner" class="help-banner" hidden>
+      <strong>Training simulator.</strong> This is a practice environment that mimics the CalSAWS Eligibility Determination and Benefit Calculation (EDBC) workflow to teach current federal SNAP/CalFresh policy (FFY2026, incl. H.R.1). It is not the live CalSAWS system and holds no real case data. <button id="help-close">Dismiss</button>
+    </div>
+
+    <div class="work-area">
+      <!-- Left task navigation = training modules -->
+      <aside class="task-nav">
+        <div class="task-nav-header">Task Navigation</div>
+        <ul id="level-tabs" class="task-list"></ul>
+
+        <div class="task-nav-header" id="workload-header">Workload Summary</div>
+        <div class="workload" id="workload-box">
+          <div class="wl-row"><span>Points</span><span id="score" class="wl-val">0</span></div>
+          <div class="wl-row"><span>Streak</span><span id="streak" class="wl-val">—</span></div>
+          <div class="wl-row wl-note" id="level-progress"></div>
+        </div>
+
+        <div class="task-nav-header" id="shift-header">Current Shift</div>
+        <div class="workload" id="shift-box"></div>
+      </aside>
+
+      <!-- Main EDBC workspace -->
+      <main class="edbc-main">
+        <div id="play-view">
+          <div id="learning-banner" class="learning-banner" hidden>
+            <span>📘 <strong>Learning Mode</strong> — coaching is on, all modules are open, and you can retry any step. Nothing is scored or posted. Choose <strong>Menu → Graded Shift</strong> when you're ready to compete.</span>
+            <button id="primer-reopen" class="banner-btn">📖 Module Primer</button>
+          </div>
+          <div class="title-row">
+            <h1 class="page-title" id="page-title">Run Eligibility Determination and Benefit Calculation (EDBC)</h1>
+            <div class="req-legend"><span class="req">✱</span> Indicates required fields</div>
+          </div>
+
+          <section class="panel">
+            <div class="panel-head">Assistance Unit — Case Summary</div>
+            <div id="household-card" class="panel-body"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">Eligibility Determination &amp; Benefit Calculation</div>
+            <div class="panel-body">
+              <div class="bpr-row">
+                <span class="bpr-label">Benefit Processing Range:</span>
+                <label class="bpr-field">Begin Month: <span class="req">✱</span>
+                  <select id="begin-month" class="bpr-select"></select>
+                </label>
+                <label class="bpr-field">End Month: <span class="req">✱</span>
+                  <select id="end-month" class="bpr-select"></select>
+                </label>
+              </div>
+              <p id="progress-label" class="progress-label"></p>
+              <div id="step-area" class="step-area"></div>
+              <div id="feedback-area" class="feedback-area"></div>
+            </div>
+          </section>
+
+          <section class="panel" id="history-section">
+            <div class="panel-head">Case History — This Shift</div>
+            <div id="case-history" class="panel-body"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-head">Policy References</div>
+            <ul id="citation-library" class="citation-library panel-body"></ul>
+          </section>
+        </div>
+
+        <div id="board-view" hidden></div>
+      </main>
+    </div>
+
+    <div class="page-footer" id="page-footer">This Type 1 page took 1.02 seconds to load.</div>
+  </div>
+
+  <!-- Guided interface tour -->
+  <div id="tour-layer" hidden>
+    <div id="tour-spotlight"></div>
+    <div id="tour-tip"></div>
+  </div>
+
+  <!-- Floating calculator -->
+  <button id="calc-fab" class="calc-fab" title="Calculator" aria-label="Open calculator">🧮</button>
+  <div id="calc-panel" class="calc-panel" hidden>
+    <div class="calc-head"><span>🧮 Calculator</span><button id="calc-close" class="calc-close" aria-label="Close">✕</button></div>
+    <input id="calc-display" class="calc-display" type="text" inputmode="decimal" placeholder="0" />
+    <div id="calc-keys" class="calc-keys">
+      <button class="calc-key fn" data-act="clear">C</button>
+      <button class="calc-key fn" data-act="back">⌫</button>
+      <button class="calc-key op" data-val="(">(</button>
+      <button class="calc-key op" data-val=")">)</button>
+      <button class="calc-key" data-val="7">7</button>
+      <button class="calc-key" data-val="8">8</button>
+      <button class="calc-key" data-val="9">9</button>
+      <button class="calc-key op" data-val="/">/</button>
+      <button class="calc-key" data-val="4">4</button>
+      <button class="calc-key" data-val="5">5</button>
+      <button class="calc-key" data-val="6">6</button>
+      <button class="calc-key op" data-val="*">*</button>
+      <button class="calc-key" data-val="1">1</button>
+      <button class="calc-key" data-val="2">2</button>
+      <button class="calc-key" data-val="3">3</button>
+      <button class="calc-key op" data-val="-">−</button>
+      <button class="calc-key" data-val="0">0</button>
+      <button class="calc-key" data-val=".">.</button>
+      <button class="calc-key eq" data-act="eq">=</button>
+      <button class="calc-key op" data-val="+">+</button>
+    </div>
+  </div>
+
+  <script type="module" src="game.js"></script>
+</body>
+</html>
