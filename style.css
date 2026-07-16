@@ -124,6 +124,7 @@ body {
   line-height: 1.45;
 }
 .learning-banner { display: flex; align-items: center; gap: 12px; justify-content: space-between; }
+.learning-banner[hidden] { display: none; } /* class rule above overrides the [hidden] attr's UA display:none, so restore it explicitly */
 .learning-banner span { flex: 1; }
 .banner-btn {
   flex-shrink: 0;
