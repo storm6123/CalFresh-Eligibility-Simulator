@@ -10,7 +10,7 @@
 // │      • Where were you? (opt.)   (Short answer — auto-filled if you set PREFILL)│
 // │ 2. Click Send → link icon → copy the URL, and paste it below.                 │
 // └─────────────────────────────────────────────────────────────────────────────┘
-const FEEDBACK_FORM_URL = "PASTE_YOUR_GOOGLE_FORM_LINK_HERE";
+const FEEDBACK_FORM_URL = "https://forms.gle/4DRh2J5PiR7A5az96";
 
 // OPTIONAL: auto-fill the "Where were you?" question with the current mode + module.
 // Use the FULL form URL (…/viewform, not a forms.gle short link), add a short-answer
