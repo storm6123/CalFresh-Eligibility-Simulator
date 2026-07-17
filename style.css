@@ -862,6 +862,32 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .avatar-opt:hover { border-color: var(--btn); background: #eef4fa; }
 .avatar-opt.selected { border-color: var(--btn); background: #dcebf8; box-shadow: 0 0 0 2px rgba(33, 102, 176, 0.25); }
 
+/* ---- Worker HUD chip (case bar) ---- */
+.worker-hud {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  padding: 3px 10px 3px 6px;
+  margin-left: auto;
+  margin-right: 14px;
+  cursor: pointer;
+  color: #fff;
+  font-family: inherit;
+}
+.worker-hud:hover { background: rgba(255, 255, 255, 0.2); }
+.hud-av { font-size: 16px; line-height: 1; }
+.hud-rank { font-size: 11px; font-weight: 700; white-space: nowrap; }
+.hud-bar { width: 46px; height: 6px; background: rgba(255, 255, 255, 0.25); border-radius: 4px; overflow: hidden; }
+.hud-fill { display: block; height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.5s ease; }
+.util.util-on { color: #ffe6a8; }
+@media (max-width: 700px) {
+  .worker-hud { margin-right: 8px; }
+  .hud-rank { display: none; }
+}
+
 /* ---- Footer ---- */
 .page-footer {
   background: var(--navy);

@@ -73,6 +73,72 @@ export function confettiBurst() {
   }
 }
 
+// ---- Sound (synthesized via Web Audio — no asset files; off by default) ----
+
+let _ctx = null;
+function audio() {
+  if (!_ctx) {
+    try {
+      _ctx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch (e) {
+      _ctx = null;
+    }
+  }
+  return _ctx;
+}
+
+export function soundEnabled() {
+  try {
+    return localStorage.getItem("snapTrainerSound") === "1";
+  } catch (e) {
+    return false;
+  }
+}
+export function setSound(on) {
+  try {
+    localStorage.setItem("snapTrainerSound", on ? "1" : "0");
+  } catch (e) {
+    /* ignore */
+  }
+}
+
+function blip(freq, start, dur, type, vol) {
+  const c = audio();
+  if (!c) return;
+  const o = c.createOscillator();
+  const g = c.createGain();
+  o.type = type || "sine";
+  o.frequency.value = freq;
+  o.connect(g);
+  g.connect(c.destination);
+  const t = c.currentTime + start;
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol || 0.1, t + 0.01);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+  o.start(t);
+  o.stop(t + dur + 0.02);
+}
+
+// Short, subtle cues. name: correct | wrong | points | unlock | rankup
+export function playSound(name) {
+  if (!soundEnabled()) return;
+  const c = audio();
+  if (!c) return;
+  if (c.state === "suspended") c.resume();
+  if (name === "correct") {
+    blip(660, 0, 0.12, "sine", 0.1);
+    blip(880, 0.09, 0.14, "sine", 0.1);
+  } else if (name === "wrong") {
+    blip(196, 0, 0.18, "sine", 0.08);
+  } else if (name === "points") {
+    blip(1046, 0, 0.07, "triangle", 0.06);
+  } else if (name === "unlock") {
+    [523, 659, 784, 1046].forEach((f, i) => blip(f, i * 0.09, 0.16, "triangle", 0.09));
+  } else if (name === "rankup") {
+    [523, 659, 784, 1046, 1318].forEach((f, i) => blip(f, i * 0.08, 0.2, "sine", 0.1));
+  }
+}
+
 // Non-blocking celebratory banner (top-center), auto-dismisses.
 export function toast(html) {
   const t = document.createElement("div");

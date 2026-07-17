@@ -2,7 +2,7 @@ import { CITATIONS, SNAP } from "./rules.js";
 import { LEVELS, generateCase } from "./scenarios.js";
 import { computeShift, perStatus, QC_ERROR_EXCLUSION, ALASKA_EXEMPTION_PER } from "./scoring.js";
 import { ACHIEVEMENTS } from "./achievements.js";
-import { rankProgress, floatPopAt, confettiBurst, toast, AVATARS } from "./gamify.js";
+import { rankProgress, floatPopAt, confettiBurst, toast, AVATARS, playSound, soundEnabled, setSound } from "./gamify.js";
 import { startBearFight } from "./bearfight.js";
 import { initFeedbackButton } from "./feedback.js";
 import { initCalculator } from "./calculator.js";
@@ -269,10 +269,19 @@ function renderRankBox() {
     <div class="daily-row">🔥 ${ds.count > 0 ? `${ds.count}-day streak` : "Start a streak!"} · 🗓️ Daily ${Math.min(daily.cases, DAILY_GOAL)}/${DAILY_GOAL}${dailyDone ? " ✓" : ""}</div>`;
 }
 
+function renderWorkerHud() {
+  const hud = el("worker-hud");
+  if (!hud) return;
+  const p = rankProgress(state.score);
+  const av = state.avatar || p.rank.icon;
+  hud.innerHTML = `<span class="hud-av">${av}</span><span class="hud-rank">${p.rank.title}</span><span class="hud-bar"><span class="hud-fill" style="width:${p.pct}%"></span></span>`;
+}
+
 function renderSidebar() {
   el("score").textContent = state.score;
   el("streak").textContent = streak > 0 ? `🔥 x${streak}` : "—";
   renderRankBox();
+  renderWorkerHud();
   const stats = levelStats(currentLevel);
   el("level-progress").textContent = `${stats.completed} case${stats.completed === 1 ? "" : "s"} completed in this module`;
   renderShiftBox();
@@ -439,6 +448,7 @@ function handleAnswer(step, given) {
   // Learning Mode — no scoring, retry allowed, teaching-first feedback.
   if (gameMode === "learning") {
     const correctLearn = isCorrect(step, given);
+    playSound(correctLearn ? "correct" : "wrong");
     el("step-area")
       .querySelectorAll(".answer-btn")
       .forEach((b) => (b.disabled = true));
@@ -505,9 +515,13 @@ function handleAnswer(step, given) {
     if (rankAfter.min > rankBefore.min) {
       confettiBurst();
       toast(`<span class="toast-ic">${rankAfter.icon}</span> <strong>Rank up!</strong> You're now a <strong>${rankAfter.title}</strong>.`);
+      playSound("rankup");
+    } else {
+      playSound("correct");
     }
   } else {
     streak = 0;
+    playSound("wrong");
   }
   saveState();
   renderSidebar();
@@ -869,6 +883,7 @@ function showBoard() {
   el("page-title").textContent = "Leaderboard — Eligibility Worker Productivity";
   ensureLeaderboard();
   renderLevelTabs();
+  renderWorkerHud();
   setFooterLoadTime();
   window.scrollTo(0, 0);
 
@@ -1016,6 +1031,7 @@ function showAchievementUnlock(list) {
   card.querySelector("#ach-continue").onclick = () => (screen.hidden = true);
   screen.hidden = false;
   confettiBurst();
+  playSound("unlock");
 }
 
 function showAchievements() {
@@ -1436,6 +1452,23 @@ function init() {
   el("tut-back").onclick = showWelcome;
   const menu = el("menu-link");
   if (menu) menu.onclick = showWelcome;
+
+  const hud = el("worker-hud");
+  if (hud) hud.onclick = showProgress;
+
+  const soundBtn = el("sound-toggle");
+  if (soundBtn) {
+    const updateSoundIcon = () => {
+      soundBtn.querySelector(".ic").textContent = soundEnabled() ? "🔊" : "🔇";
+      soundBtn.classList.toggle("util-on", soundEnabled());
+    };
+    updateSoundIcon();
+    soundBtn.onclick = () => {
+      setSound(!soundEnabled());
+      updateSoundIcon();
+      if (soundEnabled()) playSound("correct"); // preview the cue when turning on
+    };
+  }
 
   const primerReopen = el("primer-reopen");
   if (primerReopen) primerReopen.onclick = reopenPrimer;
