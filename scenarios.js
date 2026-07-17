@@ -45,7 +45,9 @@ export const LEVELS = [
 
 function pickTargetGross(size, pathway = "standard") {
   const limit = pathway === "mce" ? SNAP.grossLimit200MCE.forSize(size) : SNAP.grossLimit130.forSize(size);
-  const pct = choice([55, 70, 85, 100, 112, 125, 145]);
+  // Keep MCE-designated households at/below the 200% ceiling so they actually resolve to MCE
+  // (often above 130% FPL, where the MCE pathway changes the outcome). Standard cases range wider.
+  const pct = pathway === "mce" ? choice([55, 70, 85, 95]) : choice([55, 70, 85, 100, 112, 125, 145]);
   return round10((limit * pct) / 100);
 }
 
@@ -157,9 +159,11 @@ function eligibilitySteps(household, opts = {}) {
     type: "number",
     tolerance: 2,
     correct: netIncome,
-    explain: `Earned income deduction: -${money(breakdown.eid)} (20% of $${Math.round(breakdown.earned)} earned) · Standard deduction: -${money(
+    explain: `Start from gross income: ${money(breakdown.earned)} earned + ${money(breakdown.unearned)} unearned = ${money(
+      breakdown.earned + breakdown.unearned
+    )}. Then subtract deductions: earned-income deduction -${money(breakdown.eid)} (20% of the earned portion only — unearned income counts in full) · standard deduction -${money(
       breakdown.standardDeduction
-    )} · Dependent care: -${money(breakdown.dependentCare)} · Medical: -${money(breakdown.medicalDeduction)} · Shelter: -${money(
+    )} · dependent care -${money(breakdown.dependentCare)} · medical -${money(breakdown.medicalDeduction)} · excess shelter -${money(
       breakdown.shelterDeduction
     )} → Net income = ${money(netIncome)}.`,
     citationKeys: ["deductionOrder", "cola2026"],
@@ -203,8 +207,11 @@ function level1() {
 
 function level2() {
   const size = choice([2, 3, 4]);
-  const household = buildHousehold({ size, withDeductions: true });
-  return { household, steps: eligibilitySteps(household) };
+  // California is a Broad-Based CE state — most households get Modified CE. Represent it here
+  // (with the pathway step shown so the concept is taught where it first appears).
+  const categoricalStatus = choice(["standard", "standard", "mce"]);
+  const household = buildHousehold({ size, withDeductions: true, categoricalStatus });
+  return { household, steps: eligibilitySteps(household, { askPathway: categoricalStatus !== "standard" }) };
 }
 
 function level3() {

@@ -80,7 +80,7 @@ function coachHint(step) {
     case "pathway":
       return `Pick the eligibility pathway first. If <em>every</em> member gets CalWORKs/TANF or SSI → <strong>full Categorical Eligibility</strong> (all financial tests waived). If the household gets a TANF-funded benefit and gross income is ≤ 200% FPL ($${SNAP.grossLimit200MCE.forSize(size).toLocaleString()} for size ${size}) → <strong>Modified CE</strong> (resource test waived, but the net-income test still applies). Otherwise → <strong>standard rules</strong> (gross, net, and resource tests all apply).`;
     case "netIncome":
-      return `Apply deductions in the mandatory federal order: (1) subtract 20% of <strong>earned</strong> income; (2) subtract the standard deduction (<strong>$${SNAP.standardDeduction(size)}</strong> for size ${size}); (3) dependent-care costs; (4) medical expenses over $${SNAP.medicalExpenseThreshold} (elderly/disabled members only); (5) excess shelter — shelter + the utility allowance above half of the remaining income, capped at $${SNAP.maxShelterDeductionNonElderly} unless the household has an elderly/disabled member. What remains is net monthly income.`;
+      return `Start from <strong>total gross income = earned + unearned</strong>. Then apply deductions in the mandatory federal order: (1) subtract 20% of <strong>earned</strong> income only (the earned-income deduction — unearned income is <em>not</em> reduced and counts in full); (2) subtract the standard deduction (<strong>$${SNAP.standardDeduction(size)}</strong> for size ${size}); (3) dependent-care costs; (4) medical expenses over $${SNAP.medicalExpenseThreshold} (elderly/disabled members only); (5) excess shelter — shelter + the utility allowance above half of the remaining income, capped at $${SNAP.maxShelterDeductionNonElderly} unless the household has an elderly/disabled member. What remains is net monthly income.`;
     case "eligible":
       if (currentLevel === 5) return noncitizen;
       return `Check every applicable test. <strong>Gross income</strong> ≤ 130% FPL ($${SNAP.grossLimit130.forSize(size).toLocaleString()} for size ${size}) — or ≤ 200% ($${SNAP.grossLimit200MCE.forSize(size).toLocaleString()}) under Modified CE, and waived if the household is elderly/disabled. <strong>Net income</strong> ≤ 100% FPL ($${SNAP.netLimit100.forSize(size).toLocaleString()}). <strong>Resources</strong> ≤ $${SNAP.resourceLimitStandard.toLocaleString()} ($${SNAP.resourceLimitElderlyDisabled.toLocaleString()} if elderly/disabled), unless waived by CE. The household must pass all tests that apply.`;
@@ -253,7 +253,7 @@ function renderHousehold(household) {
   if (household.medicalExpenses) addFact("Out-of-pocket medical (elderly/disabled)", `${fmtMoney(household.medicalExpenses)}/mo`);
 
   box.innerHTML = `
-    <span class="au-badge">Module ${currentLevel} — ${levelMeta.title}</span>
+    <span class="au-badge">Module ${currentLevel} of ${LEVELS.length} — ${levelMeta.title}</span>
     <table class="au-grid">
       <thead>
         <tr><th>Name</th><th>Age</th><th>Role</th><th>Earned Inc.</th><th>Unearned Inc.</th><th>Non-Financial Flags</th></tr>

@@ -94,14 +94,14 @@ export function passesEligibility(household, netIncome) {
   let grossPass = true;
   let grossTest = "waived (elderly/disabled household)";
   if (pathway === "mce") {
-    grossTest = `<= 200% FPL ($${SNAP.grossLimit200MCE.forSize(household.size)})`;
+    grossTest = `<= 200% FPL ($${SNAP.grossLimit200MCE.forSize(household.size)}) — Modified CE`;
     grossPass = gross <= SNAP.grossLimit200MCE.forSize(household.size);
   } else if (!elderlyOrDisabled) {
     grossTest = `<= 130% FPL ($${SNAP.grossLimit130.forSize(household.size)})`;
     grossPass = gross <= SNAP.grossLimit130.forSize(household.size);
   }
 
-  const assetTest = pathway === "mce" ? "waived" : elderlyOrDisabled ? `<= $${SNAP.resourceLimitElderlyDisabled}` : `<= $${SNAP.resourceLimitStandard}`;
+  const assetTest = pathway === "mce" ? "waived — Modified CE" : elderlyOrDisabled ? `<= $${SNAP.resourceLimitElderlyDisabled}` : `<= $${SNAP.resourceLimitStandard}`;
   const assetLimit = elderlyOrDisabled ? SNAP.resourceLimitElderlyDisabled : SNAP.resourceLimitStandard;
   const assetPass = pathway === "mce" ? true : (household.resources || 0) <= assetLimit;
 
