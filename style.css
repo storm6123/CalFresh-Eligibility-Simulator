@@ -799,7 +799,7 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .ach-unlock .ach-ic { font-size: 34px; line-height: 1; }
 .ach-unlock .ach-name { font-weight: 700; color: var(--navy); font-size: 15px; }
 .ach-unlock .ach-desc { font-size: 12.5px; color: #5c4a12; }
-.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 8px 0 4px; }
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 10px; margin: 8px 0 4px; }
 .ach-cell { border: 1px solid var(--grid-line); border-radius: 8px; padding: 14px 10px; text-align: center; }
 .ach-cell .ach-ic { font-size: 30px; line-height: 1; display: block; margin-bottom: 6px; }
 .ach-cell .ach-name { font-weight: 700; font-size: 12.5px; color: var(--navy); margin-bottom: 3px; }
@@ -948,4 +948,13 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
   .next-btn { width: 100%; }
   .calc-display { font-size: 16px; }
   select, input[type="text"], textarea { font-size: 16px; }
+
+  /* Overlays: use more of the screen, start at top so tall cards scroll cleanly. */
+  .overlay { padding: 10px; align-items: flex-start; }
+  .overlay-card, .overlay-card.wide { padding: 20px 18px; }
+  .wc-title { font-size: 24px; }
+  /* Stack the two mode cards so each gets full width (text stops wrapping awkwardly). */
+  .mode-picker { grid-template-columns: 1fr; }
+  /* Bigger tap targets for the celebratory / menu buttons in overlays. */
+  .wc-btn { min-height: 44px; }
 }
