@@ -149,6 +149,15 @@ function renderLevelTabs() {
     wrap.appendChild(li);
   });
 
+  // My Progress (skill map) — always available.
+  const progLi = document.createElement("li");
+  const progBtn = document.createElement("button");
+  progBtn.className = "board-link";
+  progBtn.textContent = "📈 My Progress";
+  progBtn.onclick = () => showProgress();
+  progLi.appendChild(progBtn);
+  wrap.appendChild(progLi);
+
   // Leaderboard entry — graded mode only (Learning Mode never posts).
   if (gameMode === "graded") {
     const boardLi = document.createElement("li");
@@ -159,6 +168,62 @@ function renderLevelTabs() {
     boardLi.appendChild(boardBtn);
     wrap.appendChild(boardLi);
   }
+}
+
+// Per-module skill map from persistent graded stats — shows strengths/weaknesses.
+function skillLabel(pct) {
+  if (pct === null) return { text: "Not started", cls: "sk-none" };
+  if (pct >= 90) return { text: "Strong", cls: "sk-strong" };
+  if (pct >= 70) return { text: "Developing", cls: "sk-dev" };
+  return { text: "Needs work", cls: "sk-weak" };
+}
+
+function showProgress() {
+  const screen = el("progress-screen");
+  const card = el("progress-card");
+  if (!screen || !card) return;
+
+  let totCorrect = 0;
+  let totTotal = 0;
+  const rows = LEVELS.map(({ level, title }) => {
+    const s = state.levelStats[level] || { completed: 0, correct: 0, total: 0 };
+    totCorrect += s.correct;
+    totTotal += s.total;
+    const pct = s.total > 0 ? Math.round((s.correct / s.total) * 100) : null;
+    const lab = skillLabel(pct);
+    return `<div class="sk-row">
+      <div class="sk-name">${title}</div>
+      <div class="sk-bar"><div class="sk-fill ${lab.cls}" style="width:${pct || 0}%"></div></div>
+      <div class="sk-pct">${pct === null ? "—" : pct + "%"}</div>
+      <div class="sk-tag ${lab.cls}">${lab.text}</div>
+      <div class="sk-cases">${s.completed} case${s.completed === 1 ? "" : "s"}</div>
+    </div>`;
+  }).join("");
+
+  const overall = totTotal > 0 ? Math.round((totCorrect / totTotal) * 100) : null;
+  const weakest = LEVELS.map(({ level, title }) => {
+    const s = state.levelStats[level] || { total: 0, correct: 0 };
+    return { title, pct: s.total > 0 ? s.correct / s.total : null };
+  })
+    .filter((x) => x.pct !== null)
+    .sort((a, b) => a.pct - b.pct)[0];
+
+  card.innerHTML = `
+    <div class="wc-kicker">📈 My Progress</div>
+    <h1 class="wc-title">Skill Map</h1>
+    <p class="fb-intro">Your accuracy by module across graded cases on this device. ${
+      overall === null
+        ? "Play some graded cases to start building your map."
+        : `Overall: <strong>${overall}%</strong> across ${totTotal} determinations.${
+            weakest ? ` Focus area: <strong>${weakest.title}</strong>.` : ""
+          }`
+    }</p>
+    <div class="sk-map">${rows}</div>
+    <div class="wc-menu"><button class="wc-btn primary" id="prog-close">Close</button></div>
+  `;
+  card.querySelector("#prog-close").onclick = () => (screen.hidden = true);
+  screen.hidden = false;
+  card.scrollTop = 0;
 }
 
 function applyModeChrome() {

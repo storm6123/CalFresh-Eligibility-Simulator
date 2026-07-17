@@ -741,6 +741,25 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .ref-list li { margin-bottom: 6px; }
 .ref-foot { font-size: 11px; color: var(--text-dim); margin: 16px 0 0; border-top: 1px solid #e2e8ef; padding-top: 10px; }
 
+/* ---- Skill map (My Progress) ---- */
+.sk-map { margin-top: 8px; }
+.sk-row { display: grid; grid-template-columns: 1.6fr 2.4fr 44px 96px 72px; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--grid-line); font-size: 12.5px; }
+.sk-name { font-weight: 600; color: var(--navy); }
+.sk-bar { height: 12px; background: #e2e8ef; border-radius: 6px; overflow: hidden; }
+.sk-fill { height: 100%; border-radius: 6px; }
+.sk-pct { text-align: right; font-weight: 700; color: var(--navy); }
+.sk-tag { font-size: 10.5px; font-weight: 700; text-align: center; border-radius: 8px; padding: 2px 6px; }
+.sk-cases { text-align: right; color: var(--text-dim); font-size: 11px; }
+.sk-strong { background: var(--pass-green); color: #fff; }
+.sk-dev { background: #b06a00; color: #fff; }
+.sk-weak { background: var(--req-red); color: #fff; }
+.sk-none { background: #dfe6ee; color: var(--text-dim); }
+.sk-fill.sk-strong { background: var(--pass-green); }
+.sk-fill.sk-dev { background: #d89000; }
+.sk-fill.sk-weak { background: var(--req-red); }
+.sk-fill.sk-none { background: #cdd7e1; }
+.sk-tag.sk-none { background: #dfe6ee; color: var(--text-dim); }
+
 /* ---- Footer ---- */
 .page-footer {
   background: var(--navy);
