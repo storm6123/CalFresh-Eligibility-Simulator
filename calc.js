@@ -140,9 +140,9 @@ export function abawdStatus(person) {
   if (person.pregnant) exemptions.push("pregnant");
   if (person.medicallyUnfitForWork) exemptions.push("medically_unfit");
   if ((person.workHoursPerWeek || 0) >= ABAWD.workRequirementHoursPerWeek) exemptions.push("meeting_work_requirement");
-  if (person.isHomeless) exemptions.push("homeless");
-  if (person.isVeteran) exemptions.push("veteran");
   if (person.isNativeAmericanTribalMember) exemptions.push("native_american_tribal_member");
+  // NOTE: veteran, homeless, and former-foster-youth status do NOT exempt from the ABAWD
+  // time limit. Those FRA-2023 exemptions were repealed by H.R.1 (ACL 25-93, eff. 2026-06-01).
 
   const subjectToTimeLimit = exemptions.length === 0;
   return {

@@ -90,7 +90,7 @@ function coachHint(step) {
     case "abawd":
       return `An ABAWD is age <strong>18–64</strong>, able-bodied, with no dependent child in the SNAP household. Anyone outside that age range, disabled, or living with their own minor child is <em>not</em> an ABAWD. (H.R.1 raised the top age from 54 to 64 and removed the "parent of a child under 18" exemption.)`;
     case "subjectToTimeLimit":
-      return `An ABAWD is subject to the 3-months-in-36 time limit <em>unless</em> exempt: meeting the 20 hr/week (80 hr/month) work requirement, pregnant, medically unfit for work, homeless, a veteran, or a Native American tribal member. Watch the trap: being age 60–64 exempts someone from work <em>registration</em>, but NOT from the ABAWD time limit under H.R.1.`;
+      return `An ABAWD is subject to the 3-months-in-36 time limit <em>unless</em> exempt: meeting the 20 hr/week (80 hr/month) work requirement, pregnant, medically unfit for work, or a Native American tribal member. Watch the traps: H.R.1 <strong>repealed</strong> the veteran, homeless, and former-foster-youth exemptions (so those alone no longer exempt), and being age 60–64 exempts someone from work <em>registration</em> but NOT from the ABAWD time limit.`;
     case "waitingPeriod":
       return `Lawful Permanent Residents generally must wait 5 years before qualifying — unless they are under 18, blind/disabled, have 40 qualifying work quarters, have a U.S. military connection, or meet another listed exception.`;
     case "noncitizen":

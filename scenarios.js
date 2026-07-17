@@ -251,7 +251,10 @@ function level4() {
         ? `${person.name} is disabled, so they don't meet the ABAWD definition at all.`
         : `${person.name} has their own minor child in the household, so they don't meet the ABAWD definition at all.`;
   } else if (status.subjectToTimeLimit) {
+    const repealed = person.isVeteran ? "veteran status" : person.isHomeless ? "experiencing homelessness" : null;
     reasonText = `${person.name} (age ${person.age}) meets the ABAWD definition and has no qualifying exemption, so they ARE subject to the 3-months-in-36 time limit.${
+      repealed ? ` Note: ${repealed} does NOT exempt them — H.R.1 repealed the FRA-2023 veteran, homeless, and former-foster-youth exemptions (ACL 25-93).` : ""
+    }${
       person.age >= 60 ? " Being 60-64 exempts them from general work registration, but NOT from the ABAWD time limit itself — a real exemption is still required (H.R.1)." : ""
     }`;
   } else {

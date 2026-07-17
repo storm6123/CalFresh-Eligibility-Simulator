@@ -122,16 +122,15 @@ export const ABAWD = {
     "Age range expanded from 18-54 to 18-64.",
     "Individuals 60-64 are exempt from general work registration by age, but are still subject to the ABAWD time limit unless another exemption applies.",
     "The exemption for parents of / people living with a child under 18 was ELIMINATED — no longer exempt solely for that reason.",
-    "The exemption for former foster youth under 24 was ELIMINATED immediately (previously scheduled to expire in 2030).",
+    "The FRA-2023 exemptions for veterans, individuals experiencing homelessness, and former foster youth (under 25) were ELIMINATED (ACL 25-93). None of these exempt from the time limit on their own.",
     "A NEW exemption for Native American tribal members was added (eff. 2026-06-01).",
   ],
   // Exemptions still in effect after H.R.1 (non-exhaustive, used by the scenario generator):
+  // Veteran / homeless / former-foster-youth are intentionally NOT here — repealed by H.R.1.
   exemptionReasons: [
     "pregnant",
     "medically certified unfit for work",
     "already meeting the 20hr/week work requirement",
-    "homeless",
-    "veteran",
     "native_american_tribal_member",
   ],
 };
