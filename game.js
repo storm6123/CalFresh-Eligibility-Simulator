@@ -46,6 +46,7 @@ function loadState() {
   s.dayStreak = s.dayStreak && typeof s.dayStreak === "object" ? s.dayStreak : { count: 0, lastDay: null };
   s.daily = s.daily && typeof s.daily === "object" ? s.daily : { date: null, cases: 0, rewarded: false };
   s.avatar = s.avatar || null;
+  if (s.avatar && !AVATARS.includes(s.avatar)) s.avatar = null; // migrate off retired (human) avatars
   return s;
 }
 

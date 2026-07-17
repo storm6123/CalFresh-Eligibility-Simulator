@@ -25,7 +25,7 @@ export function rankProgress(score) {
   return { rank, next, pct, toNext: next ? next.min - score : 0, isMax: !next };
 }
 
-export const AVATARS = ["🧑‍💼", "👩‍💼", "👨‍💼", "🧑‍💻", "👩‍🏫", "🧕", "👨‍🦱", "👩‍🦰", "🧑‍🦲", "👳", "🦸", "🐻"];
+export const AVATARS = ["🐻", "🦊", "🦁", "🐯", "🐨", "🐼", "🐸", "🦉", "🐧", "🐢", "🦆", "🦅"];
 
 // ---- Effects layer (floating text, confetti, toasts) ----
 
