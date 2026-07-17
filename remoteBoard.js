@@ -6,7 +6,7 @@
 export const LB = {
   // Paste your deployed Apps Script web-app URL here (…/exec) to turn on the shared board.
   // You can also set it at runtime without editing code: localStorage 'snapTrainerLbEndpoint'.
-  endpoint: "",
+  endpoint: "https://script.google.com/macros/s/AKfycbwpg2pXV7SixxXbw-cZQy8Ps557IsfJzcYckMG9i9FjGMhXe1MIrcDfW6BRxtJi9lT3Fw/exec",
   token: "snap-trainer-v1", // must match SHARED_TOKEN in the Apps Script
   topN: 25,
 };
