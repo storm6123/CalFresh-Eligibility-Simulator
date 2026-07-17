@@ -773,6 +773,22 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .as-rq { font-weight: 700; color: var(--navy); }
 .as-rex { color: #3a4753; margin-top: 3px; line-height: 1.4; }
 
+/* ---- Achievements ---- */
+.ach-unlock-list { margin: 6px 0 16px; }
+.ach-unlock { display: flex; align-items: center; gap: 14px; background: #fff8e1; border: 1px solid #f0d78a; border-radius: 8px; padding: 12px 14px; margin-bottom: 10px; }
+.ach-unlock .ach-ic { font-size: 34px; line-height: 1; }
+.ach-unlock .ach-name { font-weight: 700; color: var(--navy); font-size: 15px; }
+.ach-unlock .ach-desc { font-size: 12.5px; color: #5c4a12; }
+.ach-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; margin: 8px 0 4px; }
+.ach-cell { border: 1px solid var(--grid-line); border-radius: 8px; padding: 14px 10px; text-align: center; }
+.ach-cell .ach-ic { font-size: 30px; line-height: 1; display: block; margin-bottom: 6px; }
+.ach-cell .ach-name { font-weight: 700; font-size: 12.5px; color: var(--navy); margin-bottom: 3px; }
+.ach-cell .ach-desc { font-size: 11px; color: var(--text-dim); line-height: 1.35; }
+.ach-cell.got { background: #fffdf5; border-color: #f0d78a; }
+.ach-cell.locked { background: var(--grid-alt); opacity: 0.7; }
+.ach-cell.locked .ach-name { color: var(--text-dim); }
+.board-empty { text-align: center; color: var(--text-dim); font-style: italic; padding: 18px 8px; }
+
 /* ---- Footer ---- */
 .page-footer {
   background: var(--navy);

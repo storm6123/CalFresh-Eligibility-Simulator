@@ -194,6 +194,13 @@ function finish() {
   attempts.push({ pct, correct, total: QUESTIONS.length, ts: new Date().toISOString() });
   save(attempts);
 
+  // Let the game award the "Improver" badge when a retake beats the baseline.
+  try {
+    window.dispatchEvent(new CustomEvent("snap-assessment-done", { detail: { improved: !!(baseline && pct > baseline.pct) } }));
+  } catch (e) {
+    /* ignore */
+  }
+
   let gainLine = "";
   if (baseline) {
     const delta = pct - baseline.pct;

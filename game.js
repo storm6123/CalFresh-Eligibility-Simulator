@@ -1,6 +1,7 @@
 import { CITATIONS, SNAP } from "./rules.js";
 import { LEVELS, generateCase } from "./scenarios.js";
-import { computeShift, perStatus, benchmarkEntries, QC_ERROR_EXCLUSION, ALASKA_EXEMPTION_PER } from "./scoring.js";
+import { computeShift, perStatus, QC_ERROR_EXCLUSION, ALASKA_EXEMPTION_PER } from "./scoring.js";
+import { ACHIEVEMENTS } from "./achievements.js";
 import { startBearFight } from "./bearfight.js";
 import { initFeedbackButton } from "./feedback.js";
 import { initCalculator } from "./calculator.js";
@@ -37,9 +38,10 @@ function loadState() {
   if (s.session.perErrorDollars == null) s.session.perErrorDollars = 0;
   if (s.session.perDenominatorDollars == null) s.session.perDenominatorDollars = 0;
   if (!Array.isArray(s.session.history)) s.session.history = [];
-  s.leaderboard = s.leaderboard || null; // seeded on first init
+  s.leaderboard = Array.isArray(s.leaderboard) ? s.leaderboard.filter((e) => !e.benchmark) : null; // drop old benchmark rows
   s.playerName = s.playerName || null;
   s.resume = s.resume || null; // exact in-progress case, if any
+  s.achievements = Array.isArray(s.achievements) ? s.achievements : []; // earned badge ids
   return s;
 }
 
@@ -160,6 +162,15 @@ function renderLevelTabs() {
   progBtn.onclick = () => showProgress();
   progLi.appendChild(progBtn);
   wrap.appendChild(progLi);
+
+  // Achievements gallery — always available.
+  const achLi = document.createElement("li");
+  const achBtn = document.createElement("button");
+  achBtn.className = "board-link";
+  achBtn.textContent = "🏆 Achievements";
+  achBtn.onclick = () => showAchievements();
+  achLi.appendChild(achBtn);
+  wrap.appendChild(achLi);
 
   // Leaderboard entry — graded mode only (Learning Mode never posts).
   if (gameMode === "graded") {
@@ -551,6 +562,13 @@ function renderCaseComplete() {
     </div>`;
   el("feedback-area").innerHTML = "";
   el("next-case").onclick = () => newCase();
+
+  const newlyEarned = evaluateAchievements({
+    event: "case",
+    caseAllCorrect: caseTotalCount > 0 && caseCorrectCount === caseTotalCount,
+    moduleCleared: stats.completed >= CASES_TO_UNLOCK_NEXT,
+  });
+  if (newlyEarned.length) showAchievementUnlock(newlyEarned);
 }
 
 // Render the dollar consequence of the case's determination, so the PER impact is visible
@@ -703,8 +721,8 @@ function renderShiftBox() {
 }
 
 function ensureLeaderboard() {
-  if (!state.leaderboard) {
-    state.leaderboard = benchmarkEntries();
+  if (!Array.isArray(state.leaderboard)) {
+    state.leaderboard = []; // real shifts only — no benchmark tiers (those are now achievements)
     saveState();
   }
 }
@@ -754,12 +772,22 @@ function postShift(waivePenalty) {
   renderSidebar();
   renderCaseHistory();
 
+  const newlyEarned = evaluateAchievements({
+    event: "shift",
+    shift: { accuracyPct: shift.accuracyPct, errorRatePct: shift.errorRatePct, avgSeconds: shift.avgSeconds, casesProcessed: shift.casesProcessed, score: shift.score },
+    exemptionWon: !!waivePenalty,
+  });
+
   // If a shared board is configured, post the shift's components (server recomputes the score),
   // then show the board once the write lands so it includes this score.
   if (remoteBoard.isConfigured()) {
-    remoteBoard.submitScore(entry).finally(() => showBoard());
+    remoteBoard.submitScore(entry).finally(() => {
+      showBoard();
+      showAchievementUnlock(newlyEarned);
+    });
   } else {
     showBoard();
+    showAchievementUnlock(newlyEarned);
   }
 }
 
@@ -804,13 +832,6 @@ function sortedLocalBoard() {
   return (state.leaderboard || []).slice().sort((a, b) => b.score - a.score);
 }
 
-// Merge shared (real peer) entries with the benchmark tiers for reference, ranked together.
-function mergeWithBenchmarks(remoteList) {
-  const combined = [...remoteList, ...benchmarkEntries()];
-  combined.sort((a, b) => b.score - a.score);
-  return combined.slice(0, MAX_LEADERBOARD);
-}
-
 function showBoard() {
   mode = "board";
   el("play-view").hidden = true;
@@ -826,7 +847,7 @@ function showBoard() {
     remoteBoard
       .fetchScores()
       .then((list) => {
-        if (list) renderLeaderboard({ entries: mergeWithBenchmarks(list), status: "shared" });
+        if (list) renderLeaderboard({ entries: list.slice().sort((a, b) => b.score - a.score), status: "shared" });
         else renderLeaderboard({ entries: sortedLocalBoard(), status: "offline" });
       })
       .catch(() => renderLeaderboard({ entries: sortedLocalBoard(), status: "offline" }));
@@ -839,24 +860,26 @@ function renderLeaderboard(opts = {}) {
   const status = opts.status || "local";
   const board = el("board-view");
   const entries = opts.entries || sortedLocalBoard();
-  const rows = entries
-    .map((e, i) => {
-      const rank = i + 1;
-      const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
-      const per = perStatus(e.errorRatePct);
-      const cls = e.you ? "you-row" : e.benchmark ? "bench-row" : "";
-      const exemptionBadge = e.exemption ? ' <span class="exempt-tag" title="Alaska Exemption claimed — PER penalty waived">❄️ exempt</span>' : "";
-      return `<tr class="${cls}">
-        <td class="rank">${medal}</td>
-        <td>${e.name}${e.you ? ' <span class="you-tag">you</span>' : ""}${exemptionBadge}</td>
-        <td>${e.casesProcessed}</td>
-        <td>${e.accuracyPct}%</td>
-        <td>${e.avgSeconds}s</td>
-        <td class="${per.cls}">${e.errorRatePct}%</td>
-        <td class="score-cell">${e.score.toLocaleString()}</td>
-      </tr>`;
-    })
-    .join("");
+  const rows = entries.length
+    ? entries
+        .map((e, i) => {
+          const rank = i + 1;
+          const medal = rank === 1 ? "🥇" : rank === 2 ? "🥈" : rank === 3 ? "🥉" : rank;
+          const per = perStatus(e.errorRatePct);
+          const cls = e.you ? "you-row" : "";
+          const exemptionBadge = e.exemption ? ' <span class="exempt-tag" title="Alaska Exemption claimed — PER penalty waived">❄️ exempt</span>' : "";
+          return `<tr class="${cls}">
+            <td class="rank">${medal}</td>
+            <td>${e.name}${e.you ? ' <span class="you-tag">you</span>' : ""}${exemptionBadge}</td>
+            <td>${e.casesProcessed}</td>
+            <td>${e.accuracyPct}%</td>
+            <td>${e.avgSeconds}s</td>
+            <td class="${per.cls}">${e.errorRatePct}%</td>
+            <td class="score-cell">${e.score.toLocaleString()}</td>
+          </tr>`;
+        })
+        .join("")
+    : `<tr><td colspan="7" class="board-empty">No shifts posted yet — complete 10+ cases and submit a shift to appear here.</td></tr>`;
 
   const statusBanner = {
     loading: '<p class="board-status">⏳ Loading shared scores…</p>',
@@ -867,10 +890,10 @@ function renderLeaderboard(opts = {}) {
 
   const disclaimer =
     status === "shared" || status === "loading"
-      ? "Rows marked <em>(benchmark)</em> are target skill tiers, not people. Scores are validated and recomputed on the server from your gameplay — the app posts them automatically. Names are first-name/initials only."
+      ? "Scores are validated and recomputed on the server from your gameplay — the app posts them automatically. Names are first-name/initials only. Hit milestones to earn 🏆 badges (see Achievements)."
       : status === "offline"
-      ? "The shared board is unreachable right now; this is your local copy. Rows marked <em>(benchmark)</em> are target tiers."
-      : "These rankings are stored locally in this browser. Rows marked <em>(benchmark)</em> are target skill tiers, not other people. A shared team board can be enabled — see SHARED_LEADERBOARD_SETUP.md.";
+      ? "The shared board is unreachable right now; this is your local copy of your own shifts."
+      : "These are your own shifts, stored locally in this browser. A shared team board can be enabled — see SHARED_LEADERBOARD_SETUP.md. Hit milestones to earn 🏆 badges (see Achievements).";
 
   board.innerHTML = `
     <div class="title-row">
@@ -909,12 +932,83 @@ function renderLeaderboard(opts = {}) {
   const resetBtn = el("board-reset");
   if (resetBtn)
     resetBtn.onclick = () => {
-      if (window.confirm("Reset the local board to just the benchmark tiers? Your posted shifts will be cleared.")) {
-        state.leaderboard = benchmarkEntries();
+      if (window.confirm("Clear your locally-stored shifts from this board?")) {
+        state.leaderboard = [];
         saveState();
         renderLeaderboard({ status: "local" });
       }
     };
+}
+
+// ---- Achievements / badges ----
+
+// Evaluate unearned badges against the event context; award + persist any newly satisfied.
+function evaluateAchievements(ctx) {
+  ctx.cumCases = Object.values(state.levelStats).reduce((s, x) => s + (x.completed || 0), 0);
+  ctx.modulesStrong = LEVELS.filter(({ level }) => {
+    const s = state.levelStats[level];
+    return s && s.total >= 5 && s.correct / s.total >= 0.9;
+  }).length;
+  ctx.totalModules = LEVELS.length;
+  const newly = [];
+  for (const a of ACHIEVEMENTS) {
+    if (state.achievements.includes(a.id)) continue;
+    let ok = false;
+    try {
+      ok = !!a.check(ctx);
+    } catch (e) {
+      ok = false;
+    }
+    if (ok) {
+      state.achievements.push(a.id);
+      newly.push(a);
+    }
+  }
+  if (newly.length) saveState();
+  return newly;
+}
+
+function showAchievementUnlock(list) {
+  if (!list || !list.length) return;
+  const screen = el("achievement-screen");
+  const card = el("achievement-card");
+  if (!screen || !card) return;
+  card.innerHTML = `
+    <div class="wc-kicker">🏆 Achievement${list.length > 1 ? "s" : ""} Unlocked!</div>
+    <div class="ach-unlock-list">${list
+      .map(
+        (a) =>
+          `<div class="ach-unlock"><span class="ach-ic">${a.icon}</span><div><div class="ach-name">${a.name}</div><div class="ach-desc">${a.desc}</div></div></div>`
+      )
+      .join("")}</div>
+    <div class="wc-menu"><button class="wc-btn primary" id="ach-continue">Nice!</button></div>`;
+  card.querySelector("#ach-continue").onclick = () => (screen.hidden = true);
+  screen.hidden = false;
+}
+
+function showAchievements() {
+  const screen = el("achievements-screen");
+  const card = el("achievements-card");
+  if (!screen || !card) return;
+  const earned = state.achievements;
+  const earnedCount = ACHIEVEMENTS.filter((a) => earned.includes(a.id)).length;
+  const cells = ACHIEVEMENTS.map((a) => {
+    const got = earned.includes(a.id);
+    return `<div class="ach-cell ${got ? "got" : "locked"}">
+      <span class="ach-ic">${got ? a.icon : "🔒"}</span>
+      <div class="ach-name">${a.name}</div>
+      <div class="ach-desc">${a.desc}</div>
+    </div>`;
+  }).join("");
+  card.innerHTML = `
+    <div class="wc-kicker">🏆 Achievements</div>
+    <h1 class="wc-title">Badges — ${earnedCount}/${ACHIEVEMENTS.length}</h1>
+    <p class="fb-intro">Earn badges by hitting milestones in graded play. Locked badges show what to aim for.</p>
+    <div class="ach-grid">${cells}</div>
+    <div class="wc-menu"><button class="wc-btn primary" id="ach-gallery-close">Close</button></div>`;
+  card.querySelector("#ach-gallery-close").onclick = () => (screen.hidden = true);
+  screen.hidden = false;
+  card.scrollTop = 0;
 }
 
 function setFooterLoadTime() {
@@ -1247,6 +1341,11 @@ function init() {
   initCalculator();
   initReference();
   initAssessment();
+
+  window.addEventListener("snap-assessment-done", (e) => {
+    const newly = evaluateAchievements({ event: "assessment", assessmentImproved: !!(e.detail && e.detail.improved) });
+    if (newly.length) showAchievementUnlock(newly);
+  });
 
   initFeedbackButton(() => {
     const meta = LEVELS.find((l) => l.level === currentLevel);
