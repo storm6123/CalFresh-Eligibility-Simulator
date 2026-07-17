@@ -484,6 +484,8 @@ table.hist-grid td.hist-err { font-weight: 600; }
 table.board-grid td { vertical-align: middle; }
 table.board-grid td.rank { text-align: center; font-weight: 700; width: 46px; }
 table.board-grid td.score-cell { font-weight: 700; color: var(--header-blue); text-align: right; }
+.lb-worker { font-weight: inherit; }
+.lb-rank { display: inline-block; font-size: 10.5px; color: var(--text-dim); font-weight: 600; margin-top: 2px; }
 .board-grid tr.you-row td { background: #fff6d8 !important; font-weight: 600; }
 .board-grid tr.bench-row td { color: var(--text-dim); font-style: italic; }
 .you-tag {

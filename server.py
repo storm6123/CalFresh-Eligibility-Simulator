@@ -64,6 +64,8 @@ def validate_and_build(data):
     return {
         "name": name,
         "clientId": str(data.get("clientId") or "")[:64],
+        "rankTitle": str(data.get("rankTitle") or "")[:40],
+        "rankIcon": str(data.get("rankIcon") or "")[:8],
         "casesProcessed": cases,
         "accuracyPct": round(accuracy, 1),
         "avgSeconds": round(avg_seconds, 1),

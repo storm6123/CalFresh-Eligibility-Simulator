@@ -15,7 +15,7 @@
 
 var SHARED_TOKEN = "snap-trainer-v1"; // must match remoteBoard.js LB.token
 var SHEET_NAME = "scores";
-var HEADERS = ["ts", "name", "clientId", "casesProcessed", "accuracyPct", "avgSeconds", "errorRatePct", "exemption", "score"];
+var HEADERS = ["ts", "name", "clientId", "casesProcessed", "accuracyPct", "avgSeconds", "errorRatePct", "exemption", "score", "rankTitle", "rankIcon"];
 
 function clamp_(n, lo, hi) {
   return Math.max(lo, Math.min(hi, n));
@@ -63,6 +63,8 @@ function doGet(e) {
       errorRatePct: r[6],
       exemption: r[7] === true || r[7] === "true",
       score: r[8],
+      rankTitle: r[9] || "",
+      rankIcon: r[10] || "",
     });
   }
   rows.sort(function (a, b) {
@@ -106,6 +108,8 @@ function doPost(e) {
     Math.round(errorRate * 10) / 10,
     exemption,
     score,
+    String(data.rankTitle || "").slice(0, 40),
+    String(data.rankIcon || "").slice(0, 8),
   ]);
   return json_({ ok: true, score: score });
 }

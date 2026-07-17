@@ -46,6 +46,8 @@ export async function submitScore(entry) {
     token: LB.token,
     clientId: clientId(),
     name: entry.name,
+    rankTitle: entry.rankTitle || "",
+    rankIcon: entry.rankIcon || "",
     casesProcessed: entry.casesProcessed,
     accuracyPct: entry.accuracyPct,
     avgSeconds: entry.avgSeconds,

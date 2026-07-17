@@ -802,7 +802,8 @@ function postShift(waivePenalty) {
   ensureLeaderboard();
   const name = playerHandle();
   const shift = computeShift({ ...state.session, waivePerPenalty: waivePenalty });
-  const entry = { name, avatar: state.avatar || "", benchmark: false, you: true, exemption: !!waivePenalty, ts: Date.now(), ...shift };
+  const careerRank = rankProgress(state.score).rank;
+  const entry = { name, avatar: state.avatar || "", rankTitle: careerRank.title, rankIcon: careerRank.icon, benchmark: false, you: true, exemption: !!waivePenalty, ts: Date.now(), ...shift };
 
   // Clear the prior "current-you" marker; keep historical player rows.
   state.leaderboard.forEach((e) => (e.you = false));
@@ -914,9 +915,12 @@ function renderLeaderboard(opts = {}) {
           const cls = e.you ? "you-row" : "";
           const exemptionBadge = e.exemption ? ' <span class="exempt-tag" title="Alaska Exemption claimed — PER penalty waived">❄️ exempt</span>' : "";
           const av = e.avatar || (e.you && state.avatar) || "";
+          const rankTitle = e.rankTitle || (e.you ? rankProgress(state.score).rank.title : "");
+          const rankIcon = e.rankIcon || (e.you ? rankProgress(state.score).rank.icon : "");
+          const rankPill = rankTitle ? `<span class="lb-rank">${rankIcon} ${rankTitle}</span>` : "";
           return `<tr class="${cls}">
             <td class="rank">${medal}</td>
-            <td>${av ? av + " " : ""}${e.name}${e.you ? ' <span class="you-tag">you</span>' : ""}${exemptionBadge}</td>
+            <td><div class="lb-worker">${av ? av + " " : ""}${e.name}${e.you ? ' <span class="you-tag">you</span>' : ""}${exemptionBadge}</div>${rankPill}</td>
             <td>${e.casesProcessed}</td>
             <td>${e.accuracyPct}%</td>
             <td>${e.avgSeconds}s</td>
@@ -1111,29 +1115,6 @@ function bumpDailyChallenge() {
   }
 }
 
-// Populate the CalSAWS-style Benefit Processing Range dropdowns with a window of months
-// centered on the current benefit month. Defaults Begin/End to the current month, matching
-// the real Run EDBC screen's single-month default.
-function populateBenefitMonths() {
-  const begin = el("begin-month");
-  const end = el("end-month");
-  if (!begin || !end) return;
-  const now = new Date();
-  const opts = [];
-  for (let offset = -6; offset <= 3; offset++) {
-    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const label = `${mm}/${d.getFullYear()}`;
-    opts.push(label);
-  }
-  const current = `${String(now.getMonth() + 1).padStart(2, "0")}/${now.getFullYear()}`;
-  const optionHtml = opts.map((o) => `<option value="${o}"${o === current ? " selected" : ""}>${o}</option>`).join("");
-  begin.innerHTML = optionHtml;
-  end.innerHTML = optionHtml;
-  begin.value = current;
-  end.value = current;
-}
-
 function newCase() {
   updateDayStreak();
   currentCase = generateCase(currentLevel);
@@ -1153,7 +1134,6 @@ function newCase() {
 
   renderLevelTabs();
   renderSidebar();
-  populateBenefitMonths();
   renderHousehold(currentCase.household);
   renderStep();
   renderCaseHistory();
@@ -1356,7 +1336,6 @@ function resumeCase() {
 
   renderLevelTabs();
   renderSidebar();
-  populateBenefitMonths();
   renderHousehold(currentCase.household);
   renderCaseHistory();
   renderStep();
@@ -1400,7 +1379,7 @@ const TOUR_STEPS = [
   { selector: ".task-nav", title: "Your training modules", body: "Pick a topic here. In <strong>Learning Mode</strong> every module is open; in <strong>Graded</strong> they unlock as you clear cases. The 📊 Leaderboard also lives here." },
   { selector: "#learning-banner", title: "Learning Mode banner", body: "When you're learning, this reminds you coaching is on and nothing is scored. The <strong>📖 Module Primer</strong> button re-opens the concept overview anytime." },
   { selector: "#household-card", title: "The Assistance Unit", body: "This is the household you're evaluating — members, ages, income, and non-financial flags (elderly, disabled, immigration status). Everything you need for the determination is here." },
-  { selector: ".bpr-row", title: "Benefit Processing Range", body: "The benefit month you're determining, just like the real Run EDBC screen." },
+  { selector: "#worker-hud", title: "Your rank", body: "Earn points as you go and climb the worker ranks (Trainee → Bureau Chief). Click here anytime to see your skill map by module." },
   { selector: "#step-area", title: "Work the determination", body: "Answer each step here — net income, eligibility, benefit amount, and more. In Learning Mode a <strong>💡 Coach</strong> hint explains the method first, and you can retry." },
   { selector: "#citation-library", title: "Policy references", body: "Every correct answer cites the real policy it comes from (ACL, CFR, FNS COLA). They collect here so you can look them up." },
   { selector: "#calc-fab", title: "Calculator", body: "Need to run the math? Pop open the floating calculator anytime — type an expression or use the keypad." },

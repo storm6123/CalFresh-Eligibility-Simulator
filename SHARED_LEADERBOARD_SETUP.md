@@ -48,6 +48,15 @@ an appropriate tradeoff; don't treat scores as audited truth.
 Only first name / initials + gameplay stats are stored — no case data, no PII. Keep it that way
 by asking players to use initials. The Sheet is yours; you control access and can clear it anytime.
 
+## Updating the script (e.g., to show worker ranks)
+
+When `google-apps-script.gs` changes (like adding the `rankTitle`/`rankIcon` columns so the
+shared board shows each player's worker rank), redeploy the **same** deployment so the URL
+doesn't change: paste the new code, save, then **Deploy → Manage deployments → ✏️ Edit →
+Version: New version → Deploy**. Old rows simply lack the new columns (blank rank); new
+submissions populate them. (Ranks always show on your local board and your own row without a
+redeploy — the redeploy is only needed to see *other* players' ranks.)
+
 ## Rotating the token
 To invalidate old clients (e.g., after a wider release), change `SHARED_TOKEN` in **both**
 `google-apps-script.gs` (redeploy) and `remoteBoard.js` (redeploy the site).
