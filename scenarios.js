@@ -186,13 +186,17 @@ function eligibilitySteps(household, opts = {}) {
     type: "number",
     tolerance: 1,
     correct: benefit,
-    explain: elig.eligible
-      ? `Max allotment for household size ${household.size} is ${money(SNAP.maxAllotment.forSize(household.size))}. Benefit = max allotment − 30% of net income (floored) = ${money(
-          SNAP.maxAllotment.forSize(household.size)
-        )} − ${money(Math.floor(netIncome * 0.3))} = ${money(benefit)}${
-          household.size <= 2 && benefit === SNAP.minimumAllotment1to2 ? ` (raised to the $${SNAP.minimumAllotment1to2} minimum allotment for 1-2 person households).` : "."
-        }`
-      : "Not eligible, so the benefit is $0.",
+    explain: (function () {
+      if (!elig.eligible) return "Not eligible, so the benefit is $0.";
+      const maxAllot = SNAP.maxAllotment.forSize(household.size);
+      const rawBenefit = Math.max(0, maxAllot - Math.floor(netIncome * 0.3));
+      const raised = household.size <= 2 && benefit === SNAP.minimumAllotment1to2 && rawBenefit < SNAP.minimumAllotment1to2;
+      return `Max allotment for household size ${household.size} is ${money(maxAllot)}. Benefit = max allotment − 30% of net income (floored) = ${money(
+        maxAllot
+      )} − ${money(Math.floor(netIncome * 0.3))} = ${money(rawBenefit)}${
+        raised ? `, raised to the $${SNAP.minimumAllotment1to2} minimum allotment for eligible 1-2 person households.` : "."
+      }`;
+    })(),
     citationKeys: ["maxAllotments", "cola2026"],
   });
 

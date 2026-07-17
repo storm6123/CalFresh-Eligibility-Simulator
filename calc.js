@@ -122,7 +122,9 @@ export function snapBenefit(household, netIncome, eligible) {
   const maxAllot = SNAP.maxAllotment.forSize(household.size);
   const contribution = Math.floor(netIncome * 0.3);
   let benefit = Math.max(0, maxAllot - contribution);
-  if (household.size <= 2 && benefit > 0) benefit = Math.max(benefit, SNAP.minimumAllotment1to2);
+  // Eligible 1-2 person households receive the federal minimum allotment even when the
+  // benefit formula computes to $0 (7 CFR 273.10(e)(2)(ii)(C)).
+  if (household.size <= 2) benefit = Math.max(benefit, SNAP.minimumAllotment1to2);
   return Math.round(benefit);
 }
 
