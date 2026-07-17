@@ -2,6 +2,7 @@ import { CITATIONS, SNAP } from "./rules.js";
 import { LEVELS, generateCase } from "./scenarios.js";
 import { computeShift, perStatus, QC_ERROR_EXCLUSION, ALASKA_EXEMPTION_PER } from "./scoring.js";
 import { ACHIEVEMENTS } from "./achievements.js";
+import { rankProgress, floatPopAt, confettiBurst, toast } from "./gamify.js";
 import { startBearFight } from "./bearfight.js";
 import { initFeedbackButton } from "./feedback.js";
 import { initCalculator } from "./calculator.js";
@@ -250,9 +251,20 @@ function applyModeChrome() {
   if (banner) banner.hidden = !learning;
 }
 
+function renderRankBox() {
+  const box = el("rank-box");
+  if (!box) return;
+  const p = rankProgress(state.score);
+  box.innerHTML = `
+    <div class="rank-head"><span class="rank-ic">${p.rank.icon}</span><span class="rank-title">${p.rank.title}</span></div>
+    <div class="rank-track"><div class="rank-fill" style="width:${p.pct}%"></div></div>
+    <div class="rank-note">${p.isMax ? "Top rank reached 👑" : `${p.toNext} pts to ${p.next.title}`}</div>`;
+}
+
 function renderSidebar() {
   el("score").textContent = state.score;
   el("streak").textContent = streak > 0 ? `🔥 x${streak}` : "—";
+  renderRankBox();
   const stats = levelStats(currentLevel);
   el("level-progress").textContent = `${stats.completed} case${stats.completed === 1 ? "" : "s"} completed in this module`;
   renderShiftBox();
@@ -473,10 +485,19 @@ function handleAnswer(step, given) {
     caseCorrectCount++;
     streak++;
     const gain = 10 + Math.min(streak, 10) * 2;
+    const rankBefore = rankProgress(state.score).rank;
     state.score += gain;
     (step.citationKeys || []).forEach((k) => {
       if (!state.citations.includes(k)) state.citations.push(k);
     });
+    // Juice (cosmetic only): floating points, streak flair, and a rank-up celebration.
+    floatPopAt("#step-area", `+${gain}`);
+    if (streak >= 3 && streak % 3 === 0) floatPopAt(".prompt", `🔥 ${streak} in a row!`);
+    const rankAfter = rankProgress(state.score).rank;
+    if (rankAfter.min > rankBefore.min) {
+      confettiBurst();
+      toast(`<span class="toast-ic">${rankAfter.icon}</span> <strong>Rank up!</strong> You're now a <strong>${rankAfter.title}</strong>.`);
+    }
   } else {
     streak = 0;
   }
@@ -984,6 +1005,7 @@ function showAchievementUnlock(list) {
     <div class="wc-menu"><button class="wc-btn primary" id="ach-continue">Nice!</button></div>`;
   card.querySelector("#ach-continue").onclick = () => (screen.hidden = true);
   screen.hidden = false;
+  confettiBurst();
 }
 
 function showAchievements() {

@@ -789,6 +789,61 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .ach-cell.locked .ach-name { color: var(--text-dim); }
 .board-empty { text-align: center; color: var(--text-dim); font-style: italic; padding: 18px 8px; }
 
+/* ---- Worker rank (Workload sidebar) ---- */
+.rank-box { padding: 2px 0 10px; margin-bottom: 8px; border-bottom: 1px dashed #d6dee6; }
+.rank-head { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.rank-ic { font-size: 16px; }
+.rank-title { font-size: 12.5px; font-weight: 700; color: var(--navy); }
+.rank-track { height: 8px; background: #e2e8ef; border-radius: 5px; overflow: hidden; }
+.rank-fill { height: 100%; background: linear-gradient(90deg, var(--btn), var(--gold)); border-radius: 5px; transition: width 0.5s ease; }
+.rank-note { font-size: 10.5px; color: var(--text-dim); margin-top: 4px; }
+
+/* ---- Effects: floats, confetti, toasts ---- */
+#fx-root { position: fixed; inset: 0; pointer-events: none; z-index: 300; overflow: hidden; }
+.fx-float {
+  position: fixed;
+  font-weight: 800;
+  font-size: 18px;
+  color: var(--pass-green);
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8);
+  animation: fx-rise 1.05s ease-out forwards;
+  white-space: nowrap;
+}
+@keyframes fx-rise {
+  0% { transform: translateY(0) scale(0.8); opacity: 0; }
+  20% { transform: translateY(-6px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(-46px) scale(1); opacity: 0; }
+}
+.fx-confetti {
+  position: fixed;
+  top: -12px;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  animation: fx-fall 1.8s linear forwards;
+}
+@keyframes fx-fall {
+  0% { transform: translateY(0) rotate(var(--rot)); opacity: 1; }
+  100% { transform: translateY(102vh) rotate(calc(var(--rot) + 540deg)); opacity: 0.9; }
+}
+.fx-toast {
+  position: fixed;
+  top: -80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--navy);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  border-top: 3px solid var(--gold);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  font-size: 14px;
+  max-width: 90vw;
+  transition: top 0.4s cubic-bezier(0.2, 1.2, 0.4, 1);
+}
+.fx-toast.show { top: 18px; }
+.fx-toast .toast-ic { font-size: 18px; }
+
 /* ---- Footer ---- */
 .page-footer {
   background: var(--navy);
