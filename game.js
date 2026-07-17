@@ -413,7 +413,13 @@ function renderStep() {
   }
 
   const coach = gameMode === "learning" ? `<div class="coach">💡 <strong>Coach:</strong> ${coachHint(step)}</div>` : "";
-  stepArea.innerHTML = `${coach}<p class="prompt">${step.prompt}</p>${inputHtml}`;
+  const carry =
+    step.carry && step.carry.length
+      ? `<div class="carry-strip"><span class="carry-lbl">Carried forward from earlier steps:</span>${step.carry
+          .map((c) => `<span class="carry-item">${c.label}: <strong>${c.value}</strong></span>`)
+          .join("")}</div>`
+      : "";
+  stepArea.innerHTML = `${coach}${carry}<p class="prompt">${step.prompt}</p>${inputHtml}`;
 
   if (step.type === "number") {
     const input = el("num-input");

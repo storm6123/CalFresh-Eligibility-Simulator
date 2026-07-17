@@ -367,6 +367,24 @@ table.au-grid tr:nth-child(even) td { background: var(--grid-alt); }
 }
 .bpr-select:focus { outline: 2px solid var(--btn); border-color: var(--btn); }
 
+/* ---- Carried-forward values (inputs from earlier steps) ---- */
+.carry-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  background: #eef4fa;
+  border: 1px solid #cdddec;
+  border-left: 4px solid var(--btn);
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  color: #2a4257;
+}
+.carry-lbl { font-weight: 700; color: var(--navy); text-transform: uppercase; letter-spacing: 0.03em; font-size: 10.5px; }
+.carry-item { white-space: nowrap; }
+
 /* ---- Determination step ---- */
 .progress-label { color: var(--text-dim); font-size: 11px; margin: 0 0 8px; text-transform: uppercase; letter-spacing: 0.04em; }
 .prompt { font-size: 14px; font-weight: 600; margin: 0 0 14px; }

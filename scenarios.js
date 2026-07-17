@@ -170,11 +170,17 @@ function eligibilitySteps(household, opts = {}) {
     citationKeys: ["deductionOrder", "cola2026"],
   });
 
+  const grossIncome = breakdown.earned + breakdown.unearned;
+
   steps.push({
     id: "eligible",
     prompt: "Is this household eligible for SNAP?",
     type: "yesno",
     correct: elig.eligible,
+    carry: [
+      { label: "Gross monthly income", value: money(grossIncome) },
+      { label: "Net monthly income", value: money(netIncome) },
+    ],
     explain: `Gross test: ${elig.grossTest}${elig.grossPass === undefined ? "" : elig.grossPass ? " ✓ pass" : " ✗ fail"} · Net test: ${elig.netTest}${
       elig.netPass === undefined ? "" : elig.netPass ? " ✓ pass" : " ✗ fail"
     } · Asset test: ${elig.assetTest}${elig.assetPass === undefined ? "" : elig.assetPass ? " ✓ pass" : " ✗ fail"}.`,
@@ -187,6 +193,10 @@ function eligibilitySteps(household, opts = {}) {
     type: "number",
     tolerance: 1,
     correct: benefit,
+    carry: [
+      { label: "Net monthly income", value: money(netIncome) },
+      { label: "Eligibility", value: elig.eligible ? "Eligible" : "Not eligible" },
+    ],
     explain: (function () {
       if (!elig.eligible) return "Not eligible, so the benefit is $0.";
       const maxAllot = SNAP.maxAllotment.forSize(household.size);
