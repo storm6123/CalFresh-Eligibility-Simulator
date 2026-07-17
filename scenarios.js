@@ -231,18 +231,20 @@ function abawdCandidate() {
     isNativeAmericanTribalMember: false,
     workHoursPerWeek: 0,
   };
-  const kind = choice(["none", "none", "working", "homeless", "veteran", "tribal", "pregnant", "unfit"]);
+  const kind = choice(["none", "none", "working", "child_under_14", "child_teen", "tribal", "pregnant", "unfit", "veteran"]);
   if (kind === "working") flags.workHoursPerWeek = choice([22, 30, 40]);
-  if (kind === "homeless") flags.isHomeless = true;
-  if (kind === "veteran") flags.isVeteran = true;
   if (kind === "tribal") flags.isNativeAmericanTribalMember = true;
   if (kind === "pregnant") flags.pregnant = true;
   if (kind === "unfit") flags.medicallyUnfitForWork = true;
+  if (kind === "veteran") flags.isVeteran = true; // trap: H.R.1 repealed the veteran exemption
 
-  const hasOwnMinorChildInHousehold = choice([false, false, false, true]);
+  // H.R.1 narrowed the dependent-child exemption to a child under 14. A child 14-17 does NOT
+  // exempt — that's the "child_teen" trap.
+  const hasDependentChildUnder14 = kind === "child_under_14";
+  const hasChild14to17 = kind === "child_teen";
   const disabled = choice([false, false, false, true]);
   const [name] = names(1);
-  return { name, age, disabled, hasOwnMinorChildInHousehold, ...flags };
+  return { name, age, disabled, hasDependentChildUnder14, hasChild14to17, ...flags };
 }
 
 function level4() {
@@ -256,10 +258,14 @@ function level4() {
         ? `${person.name} is age ${person.age}, outside the current 18-64 ABAWD age range (expanded from 18-54 by H.R.1).`
         : status.reason === "disabled"
         ? `${person.name} is disabled, so they don't meet the ABAWD definition at all.`
-        : `${person.name} has their own minor child in the household, so they don't meet the ABAWD definition at all.`;
+        : `${person.name} is responsible for a dependent child under age 14, so they don't meet the ABAWD definition (H.R.1 narrowed this exemption from under-18 to under-14 — ACL 25-93).`;
   } else if (status.subjectToTimeLimit) {
     const repealed = person.isVeteran ? "veteran status" : person.isHomeless ? "experiencing homelessness" : null;
     reasonText = `${person.name} (age ${person.age}) meets the ABAWD definition and has no qualifying exemption, so they ARE subject to the 3-months-in-36 time limit.${
+      person.hasChild14to17
+        ? " Note: living with a 14–17-year-old does NOT exempt them — H.R.1 narrowed the dependent-child exemption to children under age 14 (ACL 25-93)."
+        : ""
+    }${
       repealed ? ` Note: ${repealed} does NOT exempt them — H.R.1 repealed the FRA-2023 veteran, homeless, and former-foster-youth exemptions (ACL 25-93).` : ""
     }${
       person.age >= 60 ? " Being 60-64 exempts them from general work registration, but NOT from the ABAWD time limit itself — a real exemption is still required (H.R.1)." : ""

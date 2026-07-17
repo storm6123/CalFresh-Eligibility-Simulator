@@ -88,7 +88,7 @@ function coachHint(step) {
       return `Benefit = maximum allotment − 30% of net income (dropped to whole dollars). The max allotment for size ${size} is <strong>$${SNAP.maxAllotment.forSize(size).toLocaleString()}</strong>. If the household is ineligible, the benefit is $0. Households of 1–2 have a $${SNAP.minimumAllotment1to2} minimum allotment.`;
     case "isAbawd":
     case "abawd":
-      return `An ABAWD is age <strong>18–64</strong>, able-bodied, with no dependent child in the SNAP household. Anyone outside that age range, disabled, or living with their own minor child is <em>not</em> an ABAWD. (H.R.1 raised the top age from 54 to 64 and removed the "parent of a child under 18" exemption.)`;
+      return `An ABAWD is age <strong>18–64</strong>, able-bodied, and not responsible for a dependent child <strong>under age 14</strong>. Anyone outside that age range, disabled, or caring for a child under 14 is <em>not</em> an ABAWD. Trap: H.R.1 narrowed the dependent-child exemption from under-18 to <strong>under-14</strong>, so caring only for a 14–17-year-old no longer exempts. (H.R.1 also raised the top age from 54 to 64.)`;
     case "subjectToTimeLimit":
       return `An ABAWD is subject to the 3-months-in-36 time limit <em>unless</em> exempt: meeting the 20 hr/week (80 hr/month) work requirement, pregnant, medically unfit for work, or a Native American tribal member. Watch the traps: H.R.1 <strong>repealed</strong> the veteran, homeless, and former-foster-youth exemptions (so those alone no longer exempt), and being age 60–64 exempts someone from work <em>registration</em> but NOT from the ABAWD time limit.`;
     case "waitingPeriod":
@@ -213,7 +213,9 @@ function memberFlags(m) {
   if (m.isHomeless) flags.push("Homeless");
   if (m.medicallyUnfitForWork) flags.push("Unfit for work");
   if (m.isNativeAmericanTribalMember) flags.push("Tribal member");
-  if (m.hasOwnMinorChildInHousehold) flags.push("Has minor child");
+  if (m.hasDependentChildUnder14) flags.push("Cares for child &lt;14");
+  if (m.hasChild14to17) flags.push("Child 14–17 in home");
+  if (m.hasOwnMinorChildInHousehold && !m.hasDependentChildUnder14 && !m.hasChild14to17) flags.push("Has minor child");
   if ((m.workHoursPerWeek || 0) > 0) flags.push(`${m.workHoursPerWeek} hr/wk`);
   return flags.map((f) => `<span class="flag-pill">${f}</span>`).join("") || "—";
 }
@@ -877,7 +879,7 @@ const LEVEL_PRIMERS = {
   4: {
     body: `<p><strong>Able-Bodied Adults Without Dependents (ABAWDs)</strong> can receive SNAP for only <strong>3 months in any 36-month period</strong> unless they meet a work requirement (20 hrs/week) or qualify for an exemption.</p>
       <p><strong>H.R.1 (2025)</strong> made this stricter: it raised the age range to <strong>18–64</strong> and removed the exemption for people living with or parenting a child under 18.</p>
-      <p>Watch the traps: someone disabled, under 18 / over 64, or with their own minor child in the household <em>isn't an ABAWD at all</em>. And being <strong>60–64 exempts you from work registration but NOT from the ABAWD time limit</strong>. This module is about deciding who is an ABAWD and who is subject to the clock.</p>`,
+      <p>Watch the traps: someone disabled, under 18 / over 64, or caring for a child <strong>under 14</strong> <em>isn't an ABAWD at all</em> — but caring only for a 14–17-year-old no longer exempts (H.R.1 narrowed it from under-18). And being <strong>60–64 exempts you from work registration but NOT from the ABAWD time limit</strong>. This module is about deciding who is an ABAWD and who is subject to the clock.</p>`,
   },
   5: {
     body: `<p>Not every lawfully present immigrant qualifies for SNAP, and <strong>H.R.1 / OBBB (2025)</strong> narrowed eligibility sharply.</p>

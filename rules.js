@@ -121,7 +121,7 @@ export const ABAWD = {
   changes: [
     "Age range expanded from 18-54 to 18-64.",
     "Individuals 60-64 are exempt from general work registration by age, but are still subject to the ABAWD time limit unless another exemption applies.",
-    "The exemption for parents of / people living with a child under 18 was ELIMINATED — no longer exempt solely for that reason.",
+    "The dependent-child exemption was NARROWED: living with a child under 18 no longer exempts by itself — only responsibility for a dependent child under age 14 exempts (ACL 25-93). Caring for a 14–17-year-old alone no longer exempts.",
     "The FRA-2023 exemptions for veterans, individuals experiencing homelessness, and former foster youth (under 25) were ELIMINATED (ACL 25-93). None of these exempt from the time limit on their own.",
     "A NEW exemption for Native American tribal members was added (eff. 2026-06-01).",
   ],

@@ -127,13 +127,15 @@ export function snapBenefit(household, netIncome, eligible) {
 }
 
 // A member is excluded from the ABAWD definition entirely if outside the age range, disabled,
-// or has their own minor child in the SNAP household — these are NOT "exemptions", they mean
-// the person was never an ABAWD in the first place.
+// or responsible for a dependent child under age 14 — these are NOT "exemptions", they mean
+// the person was never an ABAWD in the first place. NOTE: H.R.1 narrowed the dependent-child
+// exemption from "child under 18" to "child under 14" (ACL 25-93) — a child aged 14-17 no
+// longer exempts.
 export function abawdStatus(person) {
   const inAgeRange = person.age >= ABAWD.ageMin && person.age <= ABAWD.ageMax;
   if (!inAgeRange) return { isABAWD: false, reason: "outside_age_range" };
   if (person.disabled) return { isABAWD: false, reason: "disabled" };
-  if (person.hasOwnMinorChildInHousehold) return { isABAWD: false, reason: "has_dependent_child" };
+  if (person.hasDependentChildUnder14) return { isABAWD: false, reason: "has_dependent_child_under_14" };
 
   const exemptions = [];
   const ageBasedWorkRegExempt = person.age >= 60;
