@@ -760,6 +760,16 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .sk-fill.sk-none { background: #cdd7e1; }
 .sk-tag.sk-none { background: #dfe6ee; color: var(--text-dim); }
 
+/* ---- Assessment ---- */
+.as-prompt { font-size: 15px; margin: 8px 0 16px; }
+.as-gain { font-size: 14px; color: var(--navy); margin: 4px 0 14px; }
+.as-reviews { margin: 6px 0 4px; max-height: 320px; overflow-y: auto; }
+.as-review { font-size: 12px; padding: 8px 10px; border-radius: 4px; margin-bottom: 6px; border-left: 4px solid var(--grid-line); }
+.as-review.ok { background: var(--pass-bg); border-left-color: var(--pass-green); }
+.as-review.bad { background: var(--fail-bg); border-left-color: var(--req-red); }
+.as-rq { font-weight: 700; color: var(--navy); }
+.as-rex { color: #3a4753; margin-top: 3px; line-height: 1.4; }
+
 /* ---- Footer ---- */
 .page-footer {
   background: var(--navy);

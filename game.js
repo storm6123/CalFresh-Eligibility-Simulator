@@ -5,6 +5,7 @@ import { startBearFight } from "./bearfight.js";
 import { initFeedbackButton } from "./feedback.js";
 import { initCalculator } from "./calculator.js";
 import { initReference } from "./reference.js";
+import { initAssessment } from "./assessment.js";
 import { startTour } from "./tour.js";
 
 const STORAGE_KEY = "snapTrainerState";
@@ -1137,6 +1138,7 @@ function init() {
 
   initCalculator();
   initReference();
+  initAssessment();
 
   initFeedbackButton(() => {
     const meta = LEVELS.find((l) => l.level === currentLevel);
