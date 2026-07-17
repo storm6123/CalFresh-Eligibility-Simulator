@@ -13,12 +13,20 @@ server to run or pay for. ~10 minutes.
    - **Execute as:** Me
    - **Who has access:** Anyone
    Click **Deploy**, authorize when prompted, and **copy the Web app URL** (ends in `/exec`).
-5. **Point the game at it.** In [`remoteBoard.js`](remoteBoard.js), set:
+5. **Tell the game that URL.** The game doesn't know your Sheet exists until you give it the
+   `/exec` URL from step 4. This is what switches it from a local board to the shared one.
+   **Do this once, for everyone:** open [`remoteBoard.js`](remoteBoard.js), find the line near the
+   top that reads `endpoint: "",` and paste your URL between the quotes:
    ```js
    endpoint: "https://script.google.com/macros/s/AKfy.../exec",
    ```
-   Commit + push (the live site auto-deploys). *(Or, without editing code, run in the browser
-   console once per device: `localStorage.setItem('snapTrainerLbEndpoint','<your /exec URL>')`.)*
+   Then commit + push — the live site rebuilds and the shared board is on for **all** users.
+   *(Easiest option: just send the `/exec` URL to Claude and it will paste it in and push for you.)*
+
+   > **Testing only:** to try it on one machine without editing code, run this in that browser's
+   > console: `localStorage.setItem('snapTrainerLbEndpoint','<your /exec URL>')`. This affects
+   > **only that one browser** — it does NOT turn the board on for teammates, so it's just for
+   > a quick personal test.
 6. **Done.** Submitting a shift now posts to the Sheet, and the Leaderboard shows the live
    shared ranking with a 🟢 banner.
 
