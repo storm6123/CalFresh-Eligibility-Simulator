@@ -844,6 +844,24 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .fx-toast.show { top: 18px; }
 .fx-toast .toast-ic { font-size: 18px; }
 
+/* ---- Daily streak + avatar ---- */
+.daily-row { font-size: 10.5px; color: var(--text-dim); margin-top: 6px; }
+.welcome-streak { background: #fff4d6; border: 1px solid #f0d78a; border-radius: 6px; padding: 8px 12px; margin: 0 0 16px; font-size: 13px; color: #5c4a12; }
+.wc-avatar-label { font-size: 12px; font-weight: 600; color: var(--text-dim); margin: 4px 0 6px; }
+.avatar-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 18px; }
+.avatar-opt {
+  font-size: 22px;
+  line-height: 1;
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--grid-line);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+}
+.avatar-opt:hover { border-color: var(--btn); background: #eef4fa; }
+.avatar-opt.selected { border-color: var(--btn); background: #dcebf8; box-shadow: 0 0 0 2px rgba(33, 102, 176, 0.25); }
+
 /* ---- Footer ---- */
 .page-footer {
   background: var(--navy);

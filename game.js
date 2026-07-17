@@ -2,7 +2,7 @@ import { CITATIONS, SNAP } from "./rules.js";
 import { LEVELS, generateCase } from "./scenarios.js";
 import { computeShift, perStatus, QC_ERROR_EXCLUSION, ALASKA_EXEMPTION_PER } from "./scoring.js";
 import { ACHIEVEMENTS } from "./achievements.js";
-import { rankProgress, floatPopAt, confettiBurst, toast } from "./gamify.js";
+import { rankProgress, floatPopAt, confettiBurst, toast, AVATARS } from "./gamify.js";
 import { startBearFight } from "./bearfight.js";
 import { initFeedbackButton } from "./feedback.js";
 import { initCalculator } from "./calculator.js";
@@ -43,6 +43,9 @@ function loadState() {
   s.playerName = s.playerName || null;
   s.resume = s.resume || null; // exact in-progress case, if any
   s.achievements = Array.isArray(s.achievements) ? s.achievements : []; // earned badge ids
+  s.dayStreak = s.dayStreak && typeof s.dayStreak === "object" ? s.dayStreak : { count: 0, lastDay: null };
+  s.daily = s.daily && typeof s.daily === "object" ? s.daily : { date: null, cases: 0, rewarded: false };
+  s.avatar = s.avatar || null;
   return s;
 }
 
@@ -255,10 +258,15 @@ function renderRankBox() {
   const box = el("rank-box");
   if (!box) return;
   const p = rankProgress(state.score);
+  const av = state.avatar || p.rank.icon;
+  const ds = state.dayStreak;
+  const daily = state.daily.date === todayStr() ? state.daily : { cases: 0 };
+  const dailyDone = daily.cases >= DAILY_GOAL;
   box.innerHTML = `
-    <div class="rank-head"><span class="rank-ic">${p.rank.icon}</span><span class="rank-title">${p.rank.title}</span></div>
+    <div class="rank-head"><span class="rank-ic">${av}</span><span class="rank-title">${p.rank.title}</span></div>
     <div class="rank-track"><div class="rank-fill" style="width:${p.pct}%"></div></div>
-    <div class="rank-note">${p.isMax ? "Top rank reached 👑" : `${p.toNext} pts to ${p.next.title}`}</div>`;
+    <div class="rank-note">${p.isMax ? "Top rank reached 👑" : `${p.toNext} pts to ${p.next.title}`}</div>
+    <div class="daily-row">🔥 ${ds.count > 0 ? `${ds.count}-day streak` : "Start a streak!"} · 🗓️ Daily ${Math.min(daily.cases, DAILY_GOAL)}/${DAILY_GOAL}${dailyDone ? " ✓" : ""}</div>`;
 }
 
 function renderSidebar() {
@@ -532,6 +540,7 @@ function handleAnswer(step, given) {
 function renderCaseComplete() {
   el("progress-label").textContent = "Case complete";
   clearResume(); // the case is finished — don't resume it on next visit
+  bumpDailyChallenge(); // counts in both modes toward the daily goal
 
   // Learning Mode: nothing is scored, posted, or unlocked — just move on.
   if (gameMode === "learning") {
@@ -779,7 +788,7 @@ function postShift(waivePenalty) {
   ensureLeaderboard();
   const name = playerHandle();
   const shift = computeShift({ ...state.session, waivePerPenalty: waivePenalty });
-  const entry = { name, benchmark: false, you: true, exemption: !!waivePenalty, ts: Date.now(), ...shift };
+  const entry = { name, avatar: state.avatar || "", benchmark: false, you: true, exemption: !!waivePenalty, ts: Date.now(), ...shift };
 
   // Clear the prior "current-you" marker; keep historical player rows.
   state.leaderboard.forEach((e) => (e.you = false));
@@ -889,9 +898,10 @@ function renderLeaderboard(opts = {}) {
           const per = perStatus(e.errorRatePct);
           const cls = e.you ? "you-row" : "";
           const exemptionBadge = e.exemption ? ' <span class="exempt-tag" title="Alaska Exemption claimed — PER penalty waived">❄️ exempt</span>' : "";
+          const av = e.avatar || (e.you && state.avatar) || "";
           return `<tr class="${cls}">
             <td class="rank">${medal}</td>
-            <td>${e.name}${e.you ? ' <span class="you-tag">you</span>' : ""}${exemptionBadge}</td>
+            <td>${av ? av + " " : ""}${e.name}${e.you ? ' <span class="you-tag">you</span>' : ""}${exemptionBadge}</td>
             <td>${e.casesProcessed}</td>
             <td>${e.accuracyPct}%</td>
             <td>${e.avgSeconds}s</td>
@@ -1043,6 +1053,48 @@ function primaryName(household) {
   return applicant ? applicant.name : "Applicant";
 }
 
+// ---- Daily streak + daily challenge (cosmetic engagement layer) ----
+function dateStr(d) {
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+}
+function todayStr() {
+  return dateStr(new Date());
+}
+function yesterdayStr() {
+  const d = new Date();
+  d.setDate(d.getDate() - 1);
+  return dateStr(d);
+}
+
+// Advance the day-streak and reset the daily challenge when a new day starts. Idempotent per day.
+function updateDayStreak() {
+  const t = todayStr();
+  const ds = state.dayStreak;
+  if (ds.lastDay !== t) {
+    ds.count = ds.lastDay === yesterdayStr() ? ds.count + 1 : 1;
+    ds.lastDay = t;
+  }
+  if (state.daily.date !== t) state.daily = { date: t, cases: 0, rewarded: false };
+  saveState();
+}
+
+const DAILY_GOAL = 5;
+
+// Count a completed case toward today's challenge; reward once per day at the goal.
+function bumpDailyChallenge() {
+  if (state.daily.date !== todayStr()) state.daily = { date: todayStr(), cases: 0, rewarded: false };
+  state.daily.cases += 1;
+  if (state.daily.cases >= DAILY_GOAL && !state.daily.rewarded) {
+    state.daily.rewarded = true;
+    state.score += 50; // cosmetic Points/XP bonus (does not affect leaderboard shift scores)
+    saveState();
+    confettiBurst();
+    toast(`🗓️ <strong>Daily challenge complete!</strong> ${DAILY_GOAL} cases today — <strong>+50 pts</strong>.`);
+  } else {
+    saveState();
+  }
+}
+
 // Populate the CalSAWS-style Benefit Processing Range dropdowns with a window of months
 // centered on the current benefit month. Defaults Begin/End to the current month, matching
 // the real Run EDBC screen's single-month default.
@@ -1067,6 +1119,7 @@ function populateBenefitMonths() {
 }
 
 function newCase() {
+  updateDayStreak();
   currentCase = generateCase(currentLevel);
   stepIndex = 0;
   caseCorrectCount = 0;
@@ -1205,6 +1258,33 @@ function showWelcome() {
   if (startTitle) startTitle.textContent = anyProgress() ? "🎯 Continue Graded Shift" : "🎯 Graded Shift";
   const nudge = el("tour-nudge");
   if (nudge) nudge.hidden = tourSeen(); // first-visit-only nudge
+
+  // Day-streak welcome line
+  const streakLine = el("welcome-streak");
+  if (streakLine) {
+    if (state.dayStreak.count > 0) {
+      streakLine.hidden = false;
+      streakLine.innerHTML = `🔥 <strong>${state.dayStreak.count}-day streak</strong> — welcome back!`;
+    } else {
+      streakLine.hidden = true;
+    }
+  }
+  renderAvatarPicker();
+}
+
+function renderAvatarPicker() {
+  const picker = el("avatar-picker");
+  if (!picker) return;
+  picker.innerHTML = AVATARS.map(
+    (a) => `<button class="avatar-opt ${state.avatar === a ? "selected" : ""}" data-av="${a}">${a}</button>`
+  ).join("");
+  picker.querySelectorAll(".avatar-opt").forEach((b) => {
+    b.onclick = () => {
+      state.avatar = b.dataset.av;
+      saveState();
+      renderAvatarPicker();
+    };
+  });
 }
 
 function showTutorial() {
