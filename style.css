@@ -921,4 +921,31 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
   .work-area { grid-template-columns: 1fr; }
   .task-nav { position: static; }
   .global-tabs { font-size: 11px; }
+  /* Single column: put the actual case first so you don't scroll past the whole rail. */
+  .edbc-main { order: -1; }
+}
+
+/* ---- Phone polish (≤640px) ---- */
+@media (max-width: 640px) {
+  /* The 10 CalSAWS tabs are decorative — hide them on phones to reclaim vertical space. */
+  .global-tabs { display: none; }
+  /* Decorative util links (real ones — Menu/Help/Reference/Feedback/Sound — stay). */
+  .util-deco { display: none; }
+
+  .case-bar { padding: 8px 12px; }
+  .edbc-main, .work-area { gap: 12px; }
+  .page-title { font-size: 20px; }
+  .panel-head { font-size: 13px; }
+
+  /* Wide tables scroll horizontally within their panel instead of squeezing. */
+  table.au-grid { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+
+  /* Thumb-friendly controls. 16px inputs prevent iOS auto-zoom on focus. */
+  .answer-row { flex-wrap: wrap; }
+  .answer-btn { min-height: 44px; padding: 11px 18px; font-size: 15px; }
+  .answer-row.choice-col .answer-btn, .answer-row .answer-btn[data-value] { flex: 1 1 44%; }
+  .num-input { font-size: 16px; padding: 11px 12px; }
+  .next-btn { width: 100%; }
+  .calc-display { font-size: 16px; }
+  select, input[type="text"], textarea { font-size: 16px; }
 }
