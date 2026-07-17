@@ -6,6 +6,7 @@ import { initFeedbackButton } from "./feedback.js";
 import { initCalculator } from "./calculator.js";
 import { initReference } from "./reference.js";
 import { initAssessment } from "./assessment.js";
+import * as remoteBoard from "./remoteBoard.js";
 import { startTour } from "./tour.js";
 
 const STORAGE_KEY = "snapTrainerState";
@@ -752,7 +753,14 @@ function postShift(waivePenalty) {
   closeBearScreen();
   renderSidebar();
   renderCaseHistory();
-  showBoard();
+
+  // If a shared board is configured, post the shift's components (server recomputes the score),
+  // then show the board once the write lands so it includes this score.
+  if (remoteBoard.isConfigured()) {
+    remoteBoard.submitScore(entry).finally(() => showBoard());
+  } else {
+    showBoard();
+  }
 }
 
 function openBearScreen(perPct) {
@@ -792,21 +800,45 @@ function showPlay() {
   renderCaseHistory();
 }
 
+function sortedLocalBoard() {
+  return (state.leaderboard || []).slice().sort((a, b) => b.score - a.score);
+}
+
+// Merge shared (real peer) entries with the benchmark tiers for reference, ranked together.
+function mergeWithBenchmarks(remoteList) {
+  const combined = [...remoteList, ...benchmarkEntries()];
+  combined.sort((a, b) => b.score - a.score);
+  return combined.slice(0, MAX_LEADERBOARD);
+}
+
 function showBoard() {
   mode = "board";
   el("play-view").hidden = true;
   el("board-view").hidden = false;
   el("page-title").textContent = "Leaderboard — Eligibility Worker Productivity";
   ensureLeaderboard();
-  renderLeaderboard();
   renderLevelTabs();
   setFooterLoadTime();
   window.scrollTo(0, 0);
+
+  if (remoteBoard.isConfigured()) {
+    renderLeaderboard({ entries: sortedLocalBoard(), status: "loading" });
+    remoteBoard
+      .fetchScores()
+      .then((list) => {
+        if (list) renderLeaderboard({ entries: mergeWithBenchmarks(list), status: "shared" });
+        else renderLeaderboard({ entries: sortedLocalBoard(), status: "offline" });
+      })
+      .catch(() => renderLeaderboard({ entries: sortedLocalBoard(), status: "offline" }));
+  } else {
+    renderLeaderboard({ entries: sortedLocalBoard(), status: "local" });
+  }
 }
 
-function renderLeaderboard() {
+function renderLeaderboard(opts = {}) {
+  const status = opts.status || "local";
   const board = el("board-view");
-  const entries = (state.leaderboard || []).slice().sort((a, b) => b.score - a.score);
+  const entries = opts.entries || sortedLocalBoard();
   const rows = entries
     .map((e, i) => {
       const rank = i + 1;
@@ -826,6 +858,20 @@ function renderLeaderboard() {
     })
     .join("");
 
+  const statusBanner = {
+    loading: '<p class="board-status">⏳ Loading shared scores…</p>',
+    shared: '<p class="board-status board-status-live">🟢 Live shared board — you\'re ranking against your team.</p>',
+    offline: '<p class="board-status board-status-off">⚠ Couldn\'t reach the shared board — showing your local board. It\'ll sync when you\'re back online.</p>',
+    local: "",
+  }[status];
+
+  const disclaimer =
+    status === "shared" || status === "loading"
+      ? "Rows marked <em>(benchmark)</em> are target skill tiers, not people. Scores are validated and recomputed on the server from your gameplay — the app posts them automatically. Names are first-name/initials only."
+      : status === "offline"
+      ? "The shared board is unreachable right now; this is your local copy. Rows marked <em>(benchmark)</em> are target tiers."
+      : "These rankings are stored locally in this browser. Rows marked <em>(benchmark)</em> are target skill tiers, not other people. A shared team board can be enabled — see SHARED_LEADERBOARD_SETUP.md.";
+
   board.innerHTML = `
     <div class="title-row">
       <h1 class="page-title">Leaderboard</h1>
@@ -833,6 +879,7 @@ function renderLeaderboard() {
     <section class="panel">
       <div class="panel-head">Eligibility Worker Productivity — Ranked by Composite Score</div>
       <div class="panel-body">
+        ${statusBanner}
         <p class="board-intro">Composite score rewards <strong>accuracy</strong> most, then <strong>speed</strong>, then <strong>volume</strong>. Two <em>distinct</em> quality measures apply: <strong>Accuracy</strong> is the share of determination steps you answer correctly (a squared reward). <strong>Payment Error Rate (PER)</strong> is dollar-weighted — the share of benefit dollars mis-issued (over- + under-payments), dropping small errors, the way SNAP Quality Control measures it. When PER tops 6.00%, an H.R.1-style cost-share penalty cuts your score (ACL 25-50).</p>
         <table class="au-grid board-grid">
           <thead>
@@ -843,9 +890,9 @@ function renderLeaderboard() {
         <div class="board-actions">
           <button class="answer-btn" id="board-back">← Back to cases</button>
           <button class="answer-btn choice-btn" id="board-rename">Change worker name</button>
-          <button class="answer-btn choice-btn" id="board-reset">Reset board</button>
+          ${status === "local" ? '<button class="answer-btn choice-btn" id="board-reset">Reset board</button>' : ""}
         </div>
-        <p class="board-disclaimer">These rankings are stored locally in this browser. Rows marked <em>(benchmark)</em> are target skill tiers, not other people. A shared cross-user board would require a hosted server — ask to set one up.</p>
+        <p class="board-disclaimer">${disclaimer}</p>
       </div>
     </section>
   `;
@@ -859,13 +906,15 @@ function renderLeaderboard() {
     playerHandle();
     renderSidebar();
   };
-  el("board-reset").onclick = () => {
-    if (window.confirm("Reset the Performance Board to just the benchmark tiers? Your posted shifts will be cleared.")) {
-      state.leaderboard = benchmarkEntries();
-      saveState();
-      renderLeaderboard();
-    }
-  };
+  const resetBtn = el("board-reset");
+  if (resetBtn)
+    resetBtn.onclick = () => {
+      if (window.confirm("Reset the local board to just the benchmark tiers? Your posted shifts will be cleared.")) {
+        state.leaderboard = benchmarkEntries();
+        saveState();
+        renderLeaderboard({ status: "local" });
+      }
+    };
 }
 
 function setFooterLoadTime() {
