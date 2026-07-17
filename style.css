@@ -731,6 +731,16 @@ a.wc-btn { text-decoration: none; display: inline-flex; align-items: center; }
 .calc-key.eq { background: var(--btn); color: #fff; font-weight: 700; }
 .calc-key.eq:hover { background: var(--btn-hover); }
 
+/* ---- Reference cheat sheet ---- */
+.ref-h { font-size: 13px; color: var(--navy); margin: 18px 0 6px; border-bottom: 1px solid var(--grid-line); padding-bottom: 3px; }
+.ref-table { font-size: 12px; margin-bottom: 4px; }
+.ref-table td, .ref-table th { text-align: right; }
+.ref-table td:first-child, .ref-table th:first-child { text-align: left; }
+.ref-note { font-size: 11px; color: var(--text-dim); margin: 4px 0 0; }
+.ref-list { font-size: 12.5px; color: #3a4753; line-height: 1.55; margin: 0; padding-left: 20px; }
+.ref-list li { margin-bottom: 6px; }
+.ref-foot { font-size: 11px; color: var(--text-dim); margin: 16px 0 0; border-top: 1px solid #e2e8ef; padding-top: 10px; }
+
 /* ---- Footer ---- */
 .page-footer {
   background: var(--navy);

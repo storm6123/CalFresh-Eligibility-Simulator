@@ -4,6 +4,7 @@ import { computeShift, perStatus, benchmarkEntries, QC_ERROR_EXCLUSION, ALASKA_E
 import { startBearFight } from "./bearfight.js";
 import { initFeedbackButton } from "./feedback.js";
 import { initCalculator } from "./calculator.js";
+import { initReference } from "./reference.js";
 import { startTour } from "./tour.js";
 
 const STORAGE_KEY = "snapTrainerState";
@@ -1070,6 +1071,7 @@ function init() {
   if (primerReopen) primerReopen.onclick = reopenPrimer;
 
   initCalculator();
+  initReference();
 
   initFeedbackButton(() => {
     const meta = LEVELS.find((l) => l.level === currentLevel);
