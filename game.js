@@ -38,6 +38,7 @@ function loadState() {
   if (!Array.isArray(s.session.history)) s.session.history = [];
   s.leaderboard = s.leaderboard || null; // seeded on first init
   s.playerName = s.playerName || null;
+  s.resume = s.resume || null; // exact in-progress case, if any
   return s;
 }
 
@@ -347,6 +348,7 @@ function renderStep() {
   const step = currentCase.steps[stepIndex];
   el("progress-label").textContent = `Determination step ${stepIndex + 1} of ${currentCase.steps.length}`;
   stepStartTime = Date.now();
+  saveResume(); // persist the exact in-progress case so a reload can pick up here
 
   let inputHtml = "";
   if (step.type === "yesno") {
@@ -496,6 +498,7 @@ function handleAnswer(step, given) {
 
 function renderCaseComplete() {
   el("progress-label").textContent = "Case complete";
+  clearResume(); // the case is finished — don't resume it on next visit
 
   // Learning Mode: nothing is scored, posted, or unlocked — just move on.
   if (gameMode === "learning") {
@@ -1045,7 +1048,58 @@ function showTutorial() {
 }
 
 function anyProgress() {
-  return state.session.casesProcessed > 0 || Object.values(state.levelStats).some((s) => s.completed > 0);
+  return !!state.resume || state.session.casesProcessed > 0 || Object.values(state.levelStats).some((s) => s.completed > 0);
+}
+
+// Persist the exact in-progress case (case data + position + answers) so a reload resumes here.
+function saveResume() {
+  if (mode !== "play" || !currentCase) return;
+  state.resume = {
+    gameMode,
+    currentLevel,
+    currentCase,
+    stepIndex,
+    caseCorrectCount,
+    caseTotalCount,
+    caseAnswers,
+  };
+  saveState();
+}
+
+function clearResume() {
+  if (state.resume) {
+    state.resume = null;
+    saveState();
+  }
+}
+
+// Restore a saved in-progress case at the exact step, with prior answers/counts intact.
+function resumeCase() {
+  const r = state.resume;
+  gameMode = r.gameMode;
+  currentLevel = r.currentLevel;
+  currentCase = r.currentCase;
+  stepIndex = r.stepIndex || 0;
+  caseCorrectCount = r.caseCorrectCount || 0;
+  caseTotalCount = r.caseTotalCount || 0;
+  caseAnswers = r.caseAnswers || {};
+  streak = 0; // streak is within-session flair only; don't fabricate it on resume
+  mode = "play";
+  enterApp();
+  showPlay();
+
+  const levelMeta = LEVELS.find((l) => l.level === currentLevel);
+  el("case-name").textContent = currentCase.caseLabel || "—";
+  el("case-number").textContent = currentCase.caseNumber || "—";
+  el("page-title").textContent = `Run Eligibility Determination and Benefit Calculation (EDBC) — ${levelMeta ? levelMeta.title : "Module " + currentLevel}`;
+
+  renderLevelTabs();
+  renderSidebar();
+  populateBenefitMonths();
+  renderHousehold(currentCase.household);
+  renderCaseHistory();
+  renderStep();
+  setFooterLoadTime();
 }
 
 function captureWelcomeName() {
@@ -1065,6 +1119,11 @@ function enterApp() {
 function startPlay(newMode) {
   captureWelcomeName();
   gameMode = newMode === "learning" ? "learning" : "graded";
+  // Resume the exact in-progress case if there is one for the chosen mode.
+  if (state.resume && state.resume.gameMode === gameMode && state.resume.currentCase) {
+    resumeCase();
+    return;
+  }
   if (gameMode === "learning") primersSeen = new Set(); // re-show primers each learning session
   enterApp();
   mode = "play";
