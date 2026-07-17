@@ -262,5 +262,23 @@
   </div>
 
   <script type="module" src="game.js"></script>
+
+  <!--
+    Anonymous, cookieless visit analytics via GoatCounter (privacy-friendly, no consent banner).
+    To enable: create a free site at https://www.goatcounter.com/ and put your subdomain code
+    below (e.g. if your dashboard is https://calfresh-sim.goatcounter.com, the code is
+    "calfresh-sim"). Until a code is set, this stays completely inert — nothing is loaded.
+  -->
+  <script>
+    (function () {
+      var GOATCOUNTER_CODE = ""; // <-- paste your GoatCounter site code here to turn analytics on
+      if (!GOATCOUNTER_CODE) return; // inert until configured
+      var s = document.createElement("script");
+      s.async = true;
+      s.src = "//gc.zgo.at/count.js";
+      s.setAttribute("data-goatcounter", "https://" + GOATCOUNTER_CODE + ".goatcounter.com/count");
+      document.head.appendChild(s);
+    })();
+  </script>
 </body>
 </html>
