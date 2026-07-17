@@ -20,6 +20,10 @@ export const CITATIONS = {
     label: "CA Food Stamp Manual §63-503.311/.312 (net income computation order)",
     url: "https://www.cdss.ca.gov/Portals/9/Regs/Man/Fsman/fsman06.docx",
   },
+  verification: {
+    label: "7 CFR §273.2(f) — CalFresh verification (gross income is mandatory)",
+    url: "https://www.ecfr.gov/current/title-7/part-273/section-273.2",
+  },
   ceDistinction: {
     label: "ACL 13-32 / 14-56 — Categorical Eligibility vs. Modified CE",
     url: "https://www.cdss.ca.gov/Portals/9/Additional-Resources/Letters-and-Notices/ACLs/2023/23-80.pdf",

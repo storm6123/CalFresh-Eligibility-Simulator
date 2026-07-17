@@ -5,6 +5,7 @@ import {
   passesEligibility,
   snapBenefit,
   totalGrossIncome,
+  grossEarnedIncome,
   hasElderlyOrDisabled,
   abawdStatus,
   noncitizenEligibility,
@@ -206,7 +207,33 @@ function eligibilitySteps(household, opts = {}) {
 function level1() {
   const size = choice([1, 2, 3]);
   const household = buildHousehold({ size });
-  return { household, steps: eligibilitySteps(household) };
+  const steps = eligibilitySteps(household);
+
+  // Verification step: if the household reports earned income, ask what's required to verify it.
+  // Gross nonexempt income is MANDATORY verification (7 CFR 273.2(f)(1)(i)); documentary evidence
+  // (pay stubs) is primary, and a collateral contact is used when documents aren't available —
+  // you don't deny solely because pay stubs aren't on hand.
+  const earned = grossEarnedIncome(household);
+  if (earned > 0) {
+    const applicant = household.members.find((m) => m.relationship === "applicant") || household.members[0];
+    steps.push({
+      id: "verifyIncome",
+      prompt: `${applicant.name} reports ${money(earned)}/month in earned income from a job. Before you finalize eligibility, what must you do about this income?`,
+      type: "choice",
+      choices: [
+        { label: "Request documentary evidence (e.g., recent pay stubs)", value: "docs" },
+        { label: "Accept the applicant's verbal or written self-attestation", value: "selfattest" },
+        { label: "Deny the application if pay stubs aren't provided at the interview", value: "deny" },
+        { label: "Nothing — earned income doesn't need verification", value: "none" },
+      ],
+      correct: "docs",
+      explain:
+        "Gross nonexempt income is mandatory to verify (7 CFR §273.2(f)(1)(i)). Request documentary evidence such as pay stubs first; if the household can't provide them, use a collateral contact — you don't deny solely because pay stubs aren't on hand, and self-attestation alone isn't sufficient for income.",
+      citationKeys: ["verification"],
+    });
+  }
+
+  return { household, steps };
 }
 
 function level2() {
