@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CalSAWS Trainer — Eligibility Determination and Benefit Calculation (SNAP)</title>
+<title>SNAP Eligibility Trainer — Determination &amp; Benefit Calculation</title>
 <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <!-- Welcome / title screen -->
   <div id="welcome-screen" class="overlay">
     <div class="overlay-card">
-      <div class="wc-kicker">CalSAWS Training Simulator</div>
+      <div class="wc-kicker">SNAP Eligibility Training Simulator</div>
       <h1 class="wc-title">SNAP Policy Trainer</h1>
-      <p class="wc-sub">Step into the eligibility worker's chair. Run real <strong>Eligibility Determination and Benefit Calculation (EDBC)</strong> cases, calculate benefits, and master current SNAP / CalFresh policy — FFY 2026, including the H.R.1 changes.</p>
+      <p class="wc-sub">Step into the eligibility worker's chair. Run real <strong>eligibility determination and benefit calculation</strong> cases, calculate benefits, and master current SNAP / CalFresh policy — FFY 2026, including the H.R.1 changes.</p>
 
       <div id="tour-nudge" class="tour-nudge" hidden>
         <span>👋 <strong>New here?</strong> Take a quick tour of the interface.</span>
@@ -49,7 +49,7 @@
         <button class="wc-btn" id="wc-leaderboard">📊 Leaderboard</button>
       </div>
 
-      <p class="wc-foot">Training environment only — mimics the CalSAWS Eligibility Determination and Benefit Calculation (EDBC) workflow to teach policy. Not the live system; holds no real case data. Policy current as of 2026-07-16.</p>
+      <p class="wc-foot">Training environment only — mirrors a real eligibility determination and benefit calculation workflow to teach policy. Not a live benefits system; holds no real case data. Policy current as of 2026-07-16.</p>
     </div>
   </div>
 
@@ -145,23 +145,23 @@
       </div>
     </div>
 
-    <!-- Global navigation tabs -->
+    <!-- Global navigation tabs (generic eligibility-system chrome) -->
     <nav class="global-tabs">
       <span class="gtab">Case Info</span>
       <span class="gtab active">Eligibility</span>
-      <span class="gtab">Empl. Services</span>
+      <span class="gtab">Employment</span>
       <span class="gtab">Child Care</span>
-      <span class="gtab">Resource Databank</span>
-      <span class="gtab">Fiscal</span>
-      <span class="gtab">Special Units</span>
+      <span class="gtab">Resources</span>
+      <span class="gtab">Benefits</span>
+      <span class="gtab">Programs</span>
       <span class="gtab">Reports</span>
-      <span class="gtab">Client Corresp.</span>
-      <span class="gtab">Admin Tools</span>
+      <span class="gtab">Notices</span>
+      <span class="gtab">Admin</span>
     </nav>
     <div class="gold-rule"></div>
 
     <div id="help-banner" class="help-banner" hidden>
-      <strong>Training simulator.</strong> This is a practice environment that mimics the CalSAWS Eligibility Determination and Benefit Calculation (EDBC) workflow to teach current federal SNAP/CalFresh policy (FFY2026, incl. H.R.1). It is not the live CalSAWS system and holds no real case data. <button id="help-close">Dismiss</button>
+      <strong>Training simulator.</strong> This is a practice environment that mirrors a real eligibility determination and benefit calculation workflow to teach current federal SNAP/CalFresh policy (FFY2026, incl. H.R.1). It is not a live benefits system and holds no real case data. <button id="help-close">Dismiss</button>
     </div>
 
     <div class="work-area">
@@ -182,7 +182,7 @@
         <div class="workload" id="shift-box"></div>
       </aside>
 
-      <!-- Main EDBC workspace -->
+      <!-- Main determination workspace -->
       <main class="edbc-main">
         <div id="play-view">
           <div id="learning-banner" class="learning-banner" hidden>
@@ -190,7 +190,7 @@
             <button id="primer-reopen" class="banner-btn">📖 Module Primer</button>
           </div>
           <div class="title-row">
-            <h1 class="page-title" id="page-title">Run Eligibility Determination and Benefit Calculation (EDBC)</h1>
+            <h1 class="page-title" id="page-title">Eligibility Determination &amp; Benefit Calculation</h1>
             <div class="req-legend"><span class="req">✱</span> Indicates required fields</div>
           </div>
 

@@ -1137,7 +1137,7 @@ function newCase() {
   currentCase.caseLabel = `${surname}, ${first}`;
   el("case-name").textContent = currentCase.caseLabel;
   el("case-number").textContent = currentCase.caseNumber;
-  el("page-title").textContent = `Run Eligibility Determination and Benefit Calculation (EDBC) — ${levelMeta.title}`;
+  el("page-title").textContent = `Eligibility Determination & Benefit Calculation — ${levelMeta.title}`;
 
   renderLevelTabs();
   renderSidebar();
@@ -1339,7 +1339,7 @@ function resumeCase() {
   const levelMeta = LEVELS.find((l) => l.level === currentLevel);
   el("case-name").textContent = currentCase.caseLabel || "—";
   el("case-number").textContent = currentCase.caseNumber || "—";
-  el("page-title").textContent = `Run Eligibility Determination and Benefit Calculation (EDBC) — ${levelMeta ? levelMeta.title : "Module " + currentLevel}`;
+  el("page-title").textContent = `Eligibility Determination & Benefit Calculation — ${levelMeta ? levelMeta.title : "Module " + currentLevel}`;
 
   renderLevelTabs();
   renderSidebar();
@@ -1382,7 +1382,7 @@ function startPlay(newMode) {
 
 const TOUR_STEPS = [
   { selector: ".case-bar", title: "Case header & quick tools", body: "The client's name and case number sit here, with quick links on the right — including <strong>Menu</strong>, <strong>Feedback</strong>, and Help." },
-  { selector: ".global-tabs", title: "CalSAWS module tabs", body: "These mirror the real CalSAWS navigation. You work in <strong>Eligibility</strong>, where determinations happen — the others are here for realism." },
+  { selector: ".global-tabs", title: "System module tabs", body: "These mimic a typical eligibility system's navigation. You work in <strong>Eligibility</strong>, where determinations happen — the others are here for realism." },
   { selector: ".task-nav", title: "Your training modules", body: "Pick a topic here. In <strong>Learning Mode</strong> every module is open; in <strong>Graded</strong> they unlock as you clear cases. The 📊 Leaderboard also lives here." },
   { selector: "#learning-banner", title: "Learning Mode banner", body: "When you're learning, this reminds you coaching is on and nothing is scored. The <strong>📖 Module Primer</strong> button re-opens the concept overview anytime." },
   { selector: "#household-card", title: "The Assistance Unit", body: "This is the household you're evaluating — members, ages, income, and non-financial flags (elderly, disabled, immigration status). Everything you need for the determination is here." },

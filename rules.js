@@ -1,6 +1,6 @@
 // SNAP (federal) policy data, FY2026 (Oct 1 2025 - Sep 30 2026), 48 states + DC figures.
 // Sourced live from CDSS/FNS COLA notices via a CalFresh policy knowledge base tool on 2026-07-16.
-// California-specific administrative detail (forms, notices, CalSAWS) is deliberately omitted —
+// State-specific administrative detail (forms, notices, case-management systems) is omitted —
 // this models the underlying federal SNAP rules that apply nationwide.
 
 export const CITATIONS = {
